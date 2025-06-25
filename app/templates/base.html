@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description"
+        content="Pantamak - Your local marketplace connecting customers and shops across Cameroon.">
+    <meta name="keywords" content="Pantamak, Cameroon marketplace, local shops, buy local">
+    <title>{% block title %}AgriConnect - Local Marketplace{% endblock %}</title>
+    <link rel="preload" href="{{ url_for('static', filename='css/style.min.css') }}" as="style">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.min.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/solid.min.js"></script>
+
+
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/fontawesome.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/brands.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/regular.min.js"></script>
+
+    <script type=" application/ld+json">
+        {
+            "@context": "https://schema.org",
+                "@type": "Organization",
+                    "name": "AgriConnect",
+                        "url": "{{ url_for('main.index', _external=True) }}",
+                            "logo": "{{ url_for('static', filename='img/logo.png', _external=True) }}",
+                                "description": "AgriConnect is a local marketplace connecting customers with farmers.",
+                                    "address": {
+                "@type": "PostalAddress",
+                    "addressCountry": "CM",
+                        "addressRegion": "Centre",
+                            "addressLocality": "Yaoundé"
+            },
+            "sameAs": [
+                "https://facebook.com/pantamak",
+                "https://twitter.com/pantamak",
+                "https://instagram.com/pantamak"
+            ]
+        }
+    </script>
+    {% block head %}{% endblock %}
+</head>
+
+<body class="min-h-full font-sans">
+    {% block content %}{% endblock %}
+</body>
+
+</html>
