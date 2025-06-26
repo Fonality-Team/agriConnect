@@ -4,7 +4,6 @@ from app.extensions import initialize_extensions
 from app.views import register_views
 from app.models import *
 
-from app.extensions import db
 
 def create_app():
     app = Flask(__name__)
@@ -17,8 +16,4 @@ def create_app():
 
     # Register blueprints
     register_views(app)
-
-
-
-
     return app
