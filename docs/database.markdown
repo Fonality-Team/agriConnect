@@ -1,0 +1,152 @@
+# agiConnect Database Documentation
+
+This document describes the database schema for the **agiConnect** application, built using Flask-SQLAlchemy. The database supports connecting farmers and users, allowing farmers to list products with multiple images, provide their location and contact details, and submit KYC (Know Your Customer) verification. The schema consists of six tables: `users`, `products`, `product_images`, `locations`, `contacts`, and `kyc`.
+
+## Table Overview
+- **users**: Stores information about all users (farmers and regular users).
+- **products**: Stores details of products listed by farmers for sale.
+- **product_images**: Stores multiple image URLs for each product.
+- **locations**: Stores geolocation data for farmers.
+- **contacts**: Stores contact information for farmers.
+- **kyc**: Stores KYC verification details for farmers.
+
+## Schema Details
+
+### 1. `users` Table
+Stores user accounts, including both farmers and regular users.
+
+| Column Name   | Type         | Constraints                     | Description                                   |
+|---------------|--------------|---------------------------------|-----------------------------------------------|
+| `id`          | Integer      | Primary Key                     | Unique identifier for the user.               |
+| `username`    | String(80)   | Unique, Not Null                | Unique username for the user.                 |
+| `email`       | String(120)  | Unique, Not Null                | User's email address.                         |
+| `password_hash` | String(128) | Not Null                      | Hashed password for security.                 |
+| `role`        | String(20)   | Not Null, Default: 'user'       | Role of the user ('farmer' or 'user').        |
+| `created_at`  | DateTime     | Default: UTC now                | Timestamp when the user was created.          |
+| `updated_at`  | DateTime     | Default: UTC now, On Update: UTC now | Timestamp when the user was last updated. |
+
+**Relationships**:
+- One-to-Many: `users` to `products` (a user can have many products; `farmer_id` in `products`).
+- One-to-One: `users` to `locations` (via `user_id` in `locations`).
+- One-to-One: `users` to `contacts` (via `user_id` in `contacts`).
+- One-to-One: `users` to `kyc` (via `user_id` in `kyc`).
+
+### 2. `products` Table
+Stores products listed by farmers for sale.
+
+| Column Name   | Type         | Constraints                     | Description                                   |
+|---------------|--------------|---------------------------------|-----------------------------------------------|
+| `id`          | Integer      | Primary Key                     | Unique identifier for the product.            |
+| `name`        | String(100)  | Not Null                        | Name of the product.                          |
+| `description` | Text         | Nullable                        | Description of the product.                   |
+| `price`       | Float        | Not Null                        | Price of the product.                         |
+| `farmer_id`   | Integer      | Foreign Key (`users.id`), Not Null | ID of the farmer who listed the product.     |
+| `created_at`  | DateTime     | Default: UTC now                | Timestamp when the product was created.       |
+| `updated_at`  | DateTime     | Default: UTC now, On Update: UTC now | Timestamp when the product was last updated. |
+
+**Relationships**:
+- Many-to-One: `products` to `users` (via `farmer_id`).
+- One-to-Many: `products` to `product_images` (via `product_id` in `product_images`).
+
+### 3. `product_images` Table
+Stores multiple image URLs for each product.
+
+| Column Name   | Type         | Constraints                     | Description                                   |
+|---------------|--------------|---------------------------------|-----------------------------------------------|
+| `id`          | Integer      | Primary Key                     | Unique identifier for the image.              |
+| `product_id`  | Integer      | Foreign Key (`products.id`), Not Null | ID of the associated product.                |
+| `image_url`   | String(255)  | Not Null                        | URL or path to the product image.             |
+| `created_at`  | DateTime     | Default: UTC now                | Timestamp when the image was added.           |
+| `updated_at`  | DateTime     | Default: UTC now, On Update: UTC now | Timestamp when the image was last updated. |
+
+**Relationships**:
+- Many-to-One: `product_images` to `products` (via `product_id`).
+- Cascade: Deleting a product deletes its associated images (`cascade='all, delete-orphan'`).
+
+### 4. `locations` Table
+Stores geolocation data for farmers.
+
+| Column Name   | Type         | Constraints                     | Description                                   |
+|---------------|--------------|---------------------------------|-----------------------------------------------|
+| `id`          | Integer      | Primary Key                     | Unique identifier for the location.           |
+| `user_id`     | Integer      | Foreign Key (`users.id`), Not Null, Unique | ID of the associated farmer.                 |
+| `latitude`    | Float        | Not Null                        | Latitude coordinate of the farmer's location. |
+| `longitude`   | Float        | Not Null                        | Longitude coordinate of the farmer's location. |
+| `address`     | String(255)  | Nullable                        | Optional full address of the farmer.          |
+| `created_at`  | DateTime     | Default: UTC now                | Timestamp when the location was added.        |
+| `updated_at`  | DateTime     | Default: UTC now, On Update: UTC now | Timestamp when the location was last updated. |
+
+**Relationships**:
+- One-to-One: `locations` to `users` (via `user_id`).
+
+### 5. `contacts` Table
+Stores contact information for farmers.
+
+| Column Name   | Type         | Constraints                     | Description                                   |
+|---------------|--------------|---------------------------------|-----------------------------------------------|
+| `id`          | Integer      | Primary Key                     | Unique identifier for the contact.            |
+| `user_id`     | Integer      | Foreign Key (`users.id`), Not Null, Unique | ID of the associated farmer.                 |
+| `phone`       | String(20)   | Nullable                        | Farmer's phone number.                        |
+| `email`       | String(120)  | Nullable                        | Farmer's contact email.                       |
+| `whatsapp`    | String(20)   | Nullable                        | Farmer's WhatsApp number.                     |
+| `created_at`  | DateTime     | Default: UTC now                | Timestamp when the contact was added.         |
+| `updated_at`  | DateTime     | Default: UTC now, On Update: UTC now | Timestamp when the contact was last updated. |
+
+**Relationships**:
+- One-to-One: `contacts` to `users` (via `user_id`).
+
+### 6. `kyc` Table
+Stores KYC verification details for farmers.
+
+| Column Name       | Type         | Constraints                     | Description                                   |
+|-------------------|--------------|---------------------------------|-----------------------------------------------|
+| `id`              | Integer      | Primary Key                     | Unique identifier for the KYC record.         |
+| `user_id`         | Integer      | Foreign Key (`users.id`), Not Null, Unique | ID of the associated farmer.                 |
+| `document_type`   | String(50)   | Not Null                        | Type of document (e.g., ID card, passport).   |
+| `document_number` | String(50)   | Not Null                        | Document number.                              |
+| `document_image_url` | String(255) | Nullable                     | URL or path to the uploaded document image.   |
+| `status`          | String(20)   | Not Null, Default: 'pending'    | Verification status ('pending', 'verified', 'rejected'). |
+| `submitted_at`    | DateTime     | Default: UTC now                | Timestamp when the KYC was submitted.         |
+| `updated_at`      | DateTime     | Default: UTC now, On Update: UTC now | Timestamp when the KYC was last updated.     |
+
+**Relationships**:
+- One-to-One: `kyc` to `users` (via `user_id`).
+
+## Relationships Diagram
+```
+[Users]
+  |
+  | 1:N
+[Products]
+  | 1:N
+[ProductImages]
+
+[Users]
+  | 1:1
+[Locations]
+
+[Users]
+  | 1:1
+[Contacts]
+
+[Users]
+  | 1:1
+[KYC]
+```
+
+- **1:N (One-to-Many)**: One user (farmer) can have multiple products, and one product can have multiple images.
+- **1:1 (One-to-One)**: Each user (farmer) has one location, one contact, and one KYC record.
+
+## Notes
+- **Database Engine**: The application uses SQLite (`sqlite:///agiconnect.db`) for development, but can be configured for other databases (e.g., PostgreSQL, MySQL) by updating the `SQLALCHEMY_DATABASE_URI` in `app.py`.
+- **File Storage**: Product images (`product_images.image_url`) and KYC documents (`kyc.document_image_url`) are stored as URLs or file paths, currently managed by the `LocalFileUpload` service in `static/uploads`.
+- **Security**: Passwords in the `users` table are hashed using Werkzeug's `generate_password_hash`. Ensure proper validation and sanitization for file uploads and user inputs.
+- **Cascading Deletes**: The `product_images` table uses `cascade='all, delete-orphan'` to ensure images are deleted when their associated product is deleted.
+
+## Usage
+- **Farmers**: Register as users with `role='farmer'`, submit KYC details, add location and contact information, and list products with multiple images.
+- **Users**: Register with `role='user'` to view products and farmer details.
+- **KYC Verification**: Admins can review `kyc` records and update the `status` field.
+- **File Uploads**: Use the `LocalFileUpload` service to upload product images and KYC documents, storing URLs in the respective tables.
+
+This schema supports the core functionality of **agiConnect**, enabling scalable and organized data management for farmers and users.
