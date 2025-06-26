@@ -1,8 +1,16 @@
+import os
+import sys
+
+# Add the project root to the Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+
 from app import create_app
 from app.extensions import db
 from app.models import *
 
-def init_db():
+
+def main():
     """Initialize the database."""
     app = create_app()
     with app.app_context():
@@ -10,5 +18,5 @@ def init_db():
         print("Database initialized successfully.")
 
 
-init_db()
-
+if __name__ == "__main__":
+    sys.exit(main())

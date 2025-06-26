@@ -1,9 +1,10 @@
 # agiConnect Database Documentation
 
-This document describes the database schema for the **agiConnect** application, built using Flask-SQLAlchemy. The database supports connecting farmers and users, allowing farmers to list products with multiple images, provide their location and contact details, and submit KYC (Know Your Customer) verification. The schema consists of six tables: `users`, `products`, `product_images`, `locations`, `contacts`, and `kyc`.
+This document describes the database schema for the **agiConnect** application, built using Flask-SQLAlchemy. The database supports connecting farmers and users, allowing farmers to list products with multiple images, provide their location and contact details, and submit KYC (Know Your Customer) verification. The schema consists of seven tables: `users`, `categories`, `products`, `product_images`, `locations`, `contacts`, and `kyc`.
 
 ## Table Overview
 - **users**: Stores information about all users (farmers and regular users).
+- **categories**: Stores product categories and subcategories (self-referential).
 - **products**: Stores details of products listed by farmers for sale.
 - **product_images**: Stores multiple image URLs for each product.
 - **locations**: Stores geolocation data for farmers.
@@ -31,7 +32,22 @@ Stores user accounts, including both farmers and regular users.
 - One-to-One: `users` to `contacts` (via `user_id` in `contacts`).
 - One-to-One: `users` to `kyc` (via `user_id` in `kyc`).
 
-### 2. `products` Table
+### 2. `categories` Table
+Stores product categories and subcategories using a self-referential parent-child relationship.
+
+| Column Name   | Type         | Constraints                     | Description                                   |
+|---------------|--------------|---------------------------------|-----------------------------------------------|
+| `id`          | Integer      | Primary Key                     | Unique identifier for the category.           |
+| `name`        | String(50)   | Unique, Not Null                | Category or subcategory name.                 |
+| `description` | Text         | Nullable                        | Description of the category.                  |
+| `parent_id`   | Integer      | Foreign Key (`categories.id`), Nullable | If set, points to the parent category (for subcategories). |
+| `created_at`  | DateTime     | Default: UTC now                | Timestamp when the category was created.      |
+
+**Relationships**:
+- Self-referential: Categories can have subcategories (`parent_id` references `categories.id`).
+- One-to-Many: `categories` to `products` (a category or subcategory can have many products).
+
+### 3. `products` Table
 Stores products listed by farmers for sale.
 
 | Column Name   | Type         | Constraints                     | Description                                   |
@@ -40,15 +56,18 @@ Stores products listed by farmers for sale.
 | `name`        | String(100)  | Not Null                        | Name of the product.                          |
 | `description` | Text         | Nullable                        | Description of the product.                   |
 | `price`       | Float        | Not Null                        | Price of the product.                         |
+| `image_url`   | String(255)  | Nullable                        | Path or URL to the product image.             |
 | `farmer_id`   | Integer      | Foreign Key (`users.id`), Not Null | ID of the farmer who listed the product.     |
+| `category_id` | Integer      | Foreign Key (`categories.id`), Not Null | ID of the (sub)category.                    |
 | `created_at`  | DateTime     | Default: UTC now                | Timestamp when the product was created.       |
 | `updated_at`  | DateTime     | Default: UTC now, On Update: UTC now | Timestamp when the product was last updated. |
 
 **Relationships**:
 - Many-to-One: `products` to `users` (via `farmer_id`).
+- Many-to-One: `products` to `categories` (via `category_id`).
 - One-to-Many: `products` to `product_images` (via `product_id` in `product_images`).
 
-### 3. `product_images` Table
+### 4. `product_images` Table
 Stores multiple image URLs for each product.
 
 | Column Name   | Type         | Constraints                     | Description                                   |
@@ -63,7 +82,7 @@ Stores multiple image URLs for each product.
 - Many-to-One: `product_images` to `products` (via `product_id`).
 - Cascade: Deleting a product deletes its associated images (`cascade='all, delete-orphan'`).
 
-### 4. `locations` Table
+### 5. `locations` Table
 Stores geolocation data for farmers.
 
 | Column Name   | Type         | Constraints                     | Description                                   |
@@ -79,7 +98,7 @@ Stores geolocation data for farmers.
 **Relationships**:
 - One-to-One: `locations` to `users` (via `user_id`).
 
-### 5. `contacts` Table
+### 6. `contacts` Table
 Stores contact information for farmers.
 
 | Column Name   | Type         | Constraints                     | Description                                   |
@@ -95,7 +114,7 @@ Stores contact information for farmers.
 **Relationships**:
 - One-to-One: `contacts` to `users` (via `user_id`).
 
-### 6. `kyc` Table
+### 7. `kyc` Table
 Stores KYC verification details for farmers.
 
 | Column Name       | Type         | Constraints                     | Description                                   |
@@ -120,22 +139,16 @@ Stores KYC verification details for farmers.
 [Products]
   | 1:N
 [ProductImages]
-
-[Users]
-  | 1:1
-[Locations]
-
-[Users]
-  | 1:1
-[Contacts]
-
-[Users]
-  | 1:1
-[KYC]
+      |
+      | N:1
+  [Categories]
+      |
+      | self-ref (parent_id)
+  [Categories]
 ```
 
-- **1:N (One-to-Many)**: One user (farmer) can have multiple products, and one product can have multiple images.
-- **1:1 (One-to-One)**: Each user (farmer) has one location, one contact, and one KYC record.
+- **1:N (One-to-Many)**: One user (farmer) can have multiple products, and one product can have multiple images. One category can have multiple subcategories and products.
+- **Self-referential**: Categories can have subcategories via `parent_id`.
 
 ## Notes
 - **Database Engine**: The application uses SQLite (`sqlite:///agiconnect.db`) for development, but can be configured for other databases (e.g., PostgreSQL, MySQL) by updating the `SQLALCHEMY_DATABASE_URI` in `app.py`.

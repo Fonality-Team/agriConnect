@@ -1,6 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-db = SQLAlchemy()
+from app.extensions import db
 
 class Contact(db.Model):
     __tablename__ = 'contacts'
