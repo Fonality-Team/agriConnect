@@ -20,7 +20,7 @@ def initialize_extensions(app: Flask):
     login_manager.login_view = 'auth.login'  # Redirect to the login page if not authenticated
     login_manager.login_message = 'Please log in to access this page.'  # Custom message for unauthenticated users
     login_manager.session_protection = 'strong'  # Use strong session protection
-
+    # csrf.init_app(app)  # Initialize CSRF protection
     socketio.init_app(app)  # Initialize SocketIO with the Flask app
 
 

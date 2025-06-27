@@ -38,7 +38,7 @@
                     <!-- Category Actions -->
                     <form method="post" action="{{ url_for('admin.delete_category', category_id=category.id) }}"
                         style="margin-top: 10px;">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
                         <button type="submit"
                             onclick="return confirm('Delete category {{ category.name }}? This will also delete all products in this category.')"
                             style="width: 100%; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer;">
@@ -57,7 +57,7 @@
                             <span style="font-size: 0.75rem;">{{ sub.name }}</span>
                             <form method="post" action="{{ url_for('admin.delete_category', category_id=sub.id) }}"
                                 style="display: inline;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
                                 <button type="submit" onclick="return confirm('Delete subcategory {{ sub.name }}?')"
                                     style="background: #dc3545; color: white; border: none; border-radius: 3px; padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">×</button>
                             </form>
@@ -78,5 +78,4 @@
         </div>
     </div>
 </section>
-
 {% endblock %}
