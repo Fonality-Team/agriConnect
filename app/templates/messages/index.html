@@ -349,8 +349,72 @@
         });
 
         socket.on('new_message', function (data) {
-            if (data.sender_id === currentReceiverId) {
-                displayMessage(data.content, data.sender_username, data.created_at, false);
+            console.log('New message received:', data);
+            console.log('Current receiver ID:', currentReceiverId, typeof currentReceiverId);
+            console.log('Sender ID:', data.sender_id, typeof data.sender_id);
+
+            const senderId = parseInt(data.sender_id);
+            const currentReceiverIdInt = parseInt(currentReceiverId);
+            const senderUsername = data.sender_username;
+
+            // If the conversation with the sender is currently active, display the message
+            if (senderId === currentReceiverIdInt && currentReceiverIdInt !== null) {
+                console.log('Displaying message in active chat for sender:', senderUsername);
+                displayMessage(data.content, senderUsername, data.created_at, false);
+            } else {
+                console.log('Message not for current active chat. SenderId:', senderId, 'CurrentReceiverId:', currentReceiverIdInt);
+            }
+
+            const conversationsContainer = document.getElementById('conversations');
+            let conversationItem = document.querySelector(`.conversation-item[data-user-id="${senderId}"]`);
+
+            // If a conversation item for the sender doesn't exist, create it
+            if (!conversationItem) {
+                // Remove "No conversations" message if it exists
+                const noConvMsg = conversationsContainer.querySelector('div[style*="text-align: center"]');
+                if (noConvMsg) {
+                    noConvMsg.remove();
+                }
+
+                conversationItem = document.createElement('div');
+                conversationItem.classList.add('conversation-item');
+                conversationItem.setAttribute('data-user-id', senderId);
+                // Add the click listener when creating
+                conversationItem.addEventListener('click', () => loadConversation(senderId, senderUsername));
+            }
+
+            // Update the conversation preview
+            const nameDiv = conversationItem.querySelector('.conversation-name');
+            const previewDiv = conversationItem.querySelector('.conversation-preview');
+
+            if (nameDiv && previewDiv) {
+                // Update existing elements to preserve event listeners
+                nameDiv.textContent = senderUsername;
+                previewDiv.textContent = data.content.substring(0, 50) + (data.content.length > 50 ? '...' : '');
+            } else {
+                // Recreate the HTML if elements don't exist
+                conversationItem.innerHTML = `
+                    <div class="conversation-name">${senderUsername}</div>
+                    <div class="conversation-preview">
+                        ${data.content.substring(0, 50)}${data.content.length > 50 ? '...' : ''}
+                    </div>
+                `;
+                // Re-add the click listener since we recreated the HTML
+                conversationItem.addEventListener('click', () => loadConversation(senderId, senderUsername));
+            }
+
+            // Move the updated/new conversation to the top of the list
+            conversationsContainer.prepend(conversationItem);
+
+            // If the conversation that received a message is the active one,
+            // it should remain visually active.
+            if (senderId === currentReceiverId) {
+                // De-activate all others first
+                document.querySelectorAll('.conversation-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                // Activate the current one
+                conversationItem.classList.add('active');
             }
         });
 
@@ -369,7 +433,9 @@
         }
 
         function loadConversation(userId, username) {
+            console.log('Loading conversation with user ID:', userId, 'username:', username);
             currentReceiverId = userId;
+            console.log('Set currentReceiverId to:', currentReceiverId);
 
             // Update UI
             document.getElementById('chat-header').style.display = 'block';
