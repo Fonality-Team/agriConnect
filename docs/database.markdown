@@ -1,12 +1,14 @@
 # agiConnect Database Documentation
 
-This document describes the database schema for the **agiConnect** application, built using Flask-SQLAlchemy. The database supports connecting farmers and users, allowing farmers to list products with multiple images, provide their location and contact details, and submit KYC (Know Your Customer) verification. The schema consists of seven tables: `users`, `categories`, `products`, `product_images`, `locations`, `contacts`, and `kyc`.
+This document describes the database schema for the **agiConnect** application, built using Flask-SQLAlchemy. The database supports connecting farmers and users, allowing farmers to list products with multiple images, provide their location and contact details, and submit KYC (Know Your Customer) verification. The schema consists of nine tables: `users`, `categories`, `products`, `product_images`, `price_history`, `deliveries`, `locations`, `contacts`, and `kyc`.
 
 ## Table Overview
 - **users**: Stores information about all users (farmers and regular users).
 - **categories**: Stores product categories and subcategories (self-referential).
 - **products**: Stores details of products listed by farmers for sale.
 - **product_images**: Stores multiple image URLs for each product.
+- **price_history**: Tracks historical price changes for products.
+- **deliveries**: Stores delivery/order information for products.
 - **locations**: Stores geolocation data for farmers.
 - **contacts**: Stores contact information for farmers.
 - **kyc**: Stores KYC verification details for farmers.
@@ -82,7 +84,41 @@ Stores multiple image URLs for each product.
 - Many-to-One: `product_images` to `products` (via `product_id`).
 - Cascade: Deleting a product deletes its associated images (`cascade='all, delete-orphan'`).
 
-### 5. `locations` Table
+### 5. `price_history` Table
+Tracks historical price changes for products.
+
+| Column Name   | Type         | Constraints                     | Description                                   |
+|---------------|--------------|---------------------------------|-----------------------------------------------|
+| `id`          | Integer      | Primary Key                     | Unique identifier for the price record.       |
+| `product_id`  | Integer      | Foreign Key (`products.id`), Not Null | ID of the associated product.                |
+| `price`       | Float        | Not Null                        | Price of the product at this point in time.   |
+| `changed_at`  | DateTime     | Default: UTC now                | Timestamp when the price was recorded.        |
+
+**Relationships**:
+- Many-to-One: `price_history` to `products` (via `product_id`).
+
+### 6. `deliveries` Table
+Stores delivery/order information for products.
+
+| Column Name        | Type         | Constraints                     | Description                                   |
+|--------------------|--------------|---------------------------------|-----------------------------------------------|
+| `id`               | Integer      | Primary Key                     | Unique identifier for the delivery.           |
+| `product_id`       | Integer      | Foreign Key (`products.id`), Not Null | ID of the product being delivered.         |
+| `customer_id`      | Integer      | Foreign Key (`users.id`), Not Null | ID of the customer receiving the product.   |
+| `farmer_id`        | Integer      | Foreign Key (`users.id`), Not Null | ID of the farmer sending the product.       |
+| `delivery_address` | String(255)  | Not Null                        | Address for delivery.                         |
+| `delivery_status`  | String(50)   | Not Null, Default: 'pending'     | Status: 'pending', 'shipped', 'delivered', etc. |
+| `order_date`       | DateTime     | Default: UTC now                | When the order was placed.                    |
+| `delivery_date`    | DateTime     | Nullable                        | When the product was delivered.               |
+| `created_at`       | DateTime     | Default: UTC now                | Timestamp when the delivery record was created.|
+| `updated_at`       | DateTime     | Default: UTC now, On Update: UTC now | Timestamp when the record was last updated. |
+
+**Relationships**:
+- Many-to-One: `deliveries` to `products` (via `product_id`).
+- Many-to-One: `deliveries` to `users` as customer (via `customer_id`).
+- Many-to-One: `deliveries` to `users` as farmer (via `farmer_id`).
+
+### 7. `locations` Table
 Stores geolocation data for farmers.
 
 | Column Name   | Type         | Constraints                     | Description                                   |
@@ -98,7 +134,7 @@ Stores geolocation data for farmers.
 **Relationships**:
 - One-to-One: `locations` to `users` (via `user_id`).
 
-### 6. `contacts` Table
+### 8. `contacts` Table
 Stores contact information for farmers.
 
 | Column Name   | Type         | Constraints                     | Description                                   |
@@ -114,7 +150,7 @@ Stores contact information for farmers.
 **Relationships**:
 - One-to-One: `contacts` to `users` (via `user_id`).
 
-### 7. `kyc` Table
+### 9. `kyc` Table
 Stores KYC verification details for farmers.
 
 | Column Name       | Type         | Constraints                     | Description                                   |
@@ -139,6 +175,10 @@ Stores KYC verification details for farmers.
 [Products]
   | 1:N
 [ProductImages]
+  | 1:N
+[PriceHistory]
+  | 1:N
+[Deliveries]
       |
       | N:1
   [Categories]
@@ -146,9 +186,9 @@ Stores KYC verification details for farmers.
       | self-ref (parent_id)
   [Categories]
 ```
-
-- **1:N (One-to-Many)**: One user (farmer) can have multiple products, and one product can have multiple images. One category can have multiple subcategories and products.
+- **1:N (One-to-Many)**: One user (farmer) can have multiple products, one product can have multiple images, price history records, and deliveries. One category can have multiple subcategories and products.
 - **Self-referential**: Categories can have subcategories via `parent_id`.
+- **Deliveries**: Each delivery links a product, a customer, and a farmer (all users).
 
 ## Notes
 - **Database Engine**: The application uses SQLite (`sqlite:///agiconnect.db`) for development, but can be configured for other databases (e.g., PostgreSQL, MySQL) by updating the `SQLALCHEMY_DATABASE_URI` in `app.py`.

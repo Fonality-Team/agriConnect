@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/UserDashboard.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+    <title>Analytics - AgriConnect Admin</title>
+</head>
+
+<body>
+    <!-- Admin Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-container">
+                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
+                <h1 class="brand-name">Analytics Dashboard</h1>
+            </div>
+            <nav class="nav">
+                <ul>
+                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
+                    <li><a href="{{ url_for('admin.list_users') }}" class="nav-link">Users</a></li>
+                    <li><a href="{{ url_for('admin.list_categories') }}" class="nav-link">Categories</a></li>
+                    <li><a href="{{ url_for('admin.list_products') }}" class="nav-link">Products</a></li>
+                    <li><a href="{{ url_for('main.index') }}" class="nav-link">Main Site</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Analytics Content -->
+    <section class="products-section">
+        <div class="container">
+            <div class="products-header">
+                <h2>Platform Analytics</h2>
+                <p class="subtitle">Overview of your AgriConnect platform performance</p>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="categories-grid"
+                style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 40px;">
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        {{ total_users }}
+                    </div>
+                    <p class="category-name">Total Users</p>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: #28a745; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        {{ total_farmers }}
+                    </div>
+                    <p class="category-name">Active Farmers</p>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: #ffc107; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        {{ total_products }}
+                    </div>
+                    <p class="category-name">Total Products</p>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: #dc3545; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        {{ recent_price_changes }}
+                    </div>
+                    <p class="category-name">Price Changes (7 days)</p>
+                </div>
+            </div>
+
+            <!-- Products by Category -->
+            <div class="products-header">
+                <h3>Products by Category</h3>
+            </div>
+            <div class="categories-grid" style="margin-bottom: 40px;">
+                {% for category_name, product_count in category_stats %}
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: linear-gradient(135deg, #28a745, #20c997); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        {{ product_count }}
+                    </div>
+                    <p class="category-name">{{ category_name }}</p>
+                </div>
+                {% else %}
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: #f8f9fa; color: #6c757d; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        No Data
+                    </div>
+                    <p class="category-name">No categories found</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Recent Activity -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px;">
+                <!-- Recent Products -->
+                <div>
+                    <h3 style="color: #2d5c3b; margin-bottom: 20px;">Recent Products</h3>
+                    <div
+                        style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
+                        {% for product in recent_products %}
+                        <div
+                            style="border-bottom: 1px solid #eee; padding: 10px 0; {% if loop.last %}border-bottom: none;{% endif %}">
+                            <strong>{{ product.name }}</strong><br>
+                            <small style="color: #666;">{{ product.farmer.username if product.farmer else 'Unknown' }} •
+                                FCFA {{ "{:,.0f}".format(product.price) }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Recent Users -->
+                <div>
+                    <h3 style="color: #2d5c3b; margin-bottom: 20px;">Recent Users</h3>
+                    <div
+                        style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
+                        {% for user in recent_users %}
+                        <div
+                            style="border-bottom: 1px solid #eee; padding: 10px 0; {% if loop.last %}border-bottom: none;{% endif %}">
+                            <strong>{{ user.username }}</strong><br>
+                            <small style="color: #666;">{{ user.email }} • {{ user.role|title }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AgriConnect Admin Panel. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

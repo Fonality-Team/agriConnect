@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/UserDashboard.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+    <title>Admin Dashboard - AgriConnect</title>
+</head>
+
+
+
+<body>
+    <!-- Admin Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-container">
+                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
+                <h1 class="brand-name">AgriConnect Admin</h1>
+            </div>
+            <nav class="nav">
+                <ul>
+                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
+                    <li><a href="{{ url_for('admin.list_users') }}" class="nav-link">Users</a></li>
+                    <li><a href="{{ url_for('admin.list_categories') }}" class="nav-link">Categories</a></li>
+                    <li><a href="{{ url_for('admin.list_products') }}" class="nav-link">Products</a></li>
+                    <li><a href="{{ url_for('admin.analytics') }}" class="nav-link">Analytics</a></li>
+                    <li><a href="{{ url_for('main.index') }}" class="nav-link">Main Site</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <section class="products-section admin-section">
+        <div class="container">
+            <div class="products-header">
+                <h2 style="color: #2d5c3b !important;">Admin Dashboard</h2>
+                <p class="subtitle" style="color: #4a8b5e !important;">Welcome, {{ current_user.username }}! Manage your
+                    AgriConnect platform.</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="categories-grid" style="margin-bottom: 40px;">
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        👥
+                    </div>
+                    <p class="category-name" style="color: #2d5c3b !important;">{{ user_count }} Users</p>
+                    <a href="{{ url_for('admin.list_users') }}" class="cta-button"
+                        style="font-size: 0.8rem; padding: 8px 16px; margin-top: 10px; color: white !important;">Manage
+                        Users</a>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: linear-gradient(135deg, #28a745, #20c997); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        📂
+                    </div>
+                    <p class="category-name" style="color: #2d5c3b !important;">{{ category_count }} Categories</p>
+                    <a href="{{ url_for('admin.list_categories') }}" class="cta-button"
+                        style="font-size: 0.8rem; padding: 8px 16px; margin-top: 10px; color: white !important;">Manage
+                        Categories</a>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: linear-gradient(135deg, #ffc107, #fd7e14); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        🛒
+                    </div>
+                    <p class="category-name" style="color: #2d5c3b !important;">{{ product_count }} Products</p>
+                    <a href="{{ url_for('admin.list_products') }}" class="cta-button"
+                        style="font-size: 0.8rem; padding: 8px 16px; margin-top: 10px; color: white !important;">View
+                        Products</a>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: linear-gradient(135deg, #dc3545, #e83e8c); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        📊
+                    </div>
+                    <p class="category-name" style="color: #2d5c3b !important;">Price Tracking</p>
+                    <a href="{{ url_for('admin.price_tracking') }}" class="cta-button"
+                        style="font-size: 0.8rem; padding: 8px 16px; margin-top: 10px; color: white !important;">View
+                        Changes</a>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="products-header">
+                <h3 style="color: #2d5c3b !important;">Quick Actions</h3>
+            </div>
+            <div class="filter-buttons">
+                <a href="{{ url_for('admin.add_category') }}" class="filter-button"
+                    style="color: #28a745 !important;">Add Category</a>
+                <a href="{{ url_for('admin.analytics') }}" class="filter-button" style="color: #28a745 !important;">View
+                    Analytics</a>
+                <a href="{{ url_for('admin.list_users') }}" class="filter-button"
+                    style="color: #28a745 !important;">Manage Users</a>
+                <a href="{{ url_for('main.index') }}" class="filter-button" style="color: #28a745 !important;">View Main
+                    Site</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AgriConnect Admin Panel. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+
+</html>
+{% endblock %}

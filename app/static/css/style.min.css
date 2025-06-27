@@ -9,37 +9,32 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
     color: #333;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #ffffff;
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 /* Main container */
 .container {
     text-align: center;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 3rem 2rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    padding: 2.5rem 1.5rem;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.08);
     max-width: 600px;
-    margin: 2rem;
+    margin: 2rem auto;
     animation: fadeInUp 0.8s ease-out;
 }
 
 /* Logo/Icon */
 .logo {
-    font-size: 4rem;
+    font-size: 3rem;
     color: #667eea;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.2rem;
     animation: pulse 2s ease-in-out infinite;
 }
 
 /* Typography */
 .title {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: 700;
     color: #2d3748;
     margin-bottom: 1rem;
@@ -50,16 +45,15 @@ body {
 }
 
 .subtitle {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: #4a5568;
-    margin-bottom: 2rem;
-    line-height: 1.5;
+    margin-bottom: 1.5rem;
 }
 
 .description {
     font-size: 1rem;
     color: #718096;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     max-width: 450px;
     margin-left: auto;
     margin-right: auto;
@@ -111,41 +105,172 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 45px;
-    height: 45px;
+    width: 42px;
+    height: 42px;
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
-    border-radius: 12px;
+    border-radius: 10px;
     text-decoration: none;
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
+    font-size: 1.1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .social-link:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px) scale(1.07);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.18);
 }
 
-/* Footer */
-.footer {
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid #e2e8f0;
+/* Form Styles */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    background: #f9fafb;
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(102, 126, 234, 0.06);
+    max-width: 400px;
+    margin: 1.5rem auto;
 }
 
-.footer-text {
-    font-size: 0.9rem;
-    color: #718096;
-}
-
-.footer-email {
-    color: #667eea;
-    text-decoration: none;
+form label {
     font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.2rem;
+    display: block;
+    text-align: left;
 }
 
-.footer-email:hover {
-    text-decoration: underline;
+form input[type="text"],
+form input[type="number"],
+form input[type="email"],
+form input[type="password"],
+form textarea,
+form select {
+    width: 100%;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font-size: 1rem;
+    background: #fff;
+    color: #2d3748;
+    transition: border-color 0.2s;
+    outline: none;
+}
+
+form input[type="text"]:focus,
+form input[type="number"]:focus,
+form input[type="email"]:focus,
+form input[type="password"]:focus,
+form textarea:focus,
+form select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.10);
+}
+
+form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+form button[type="submit"],
+form button,
+button,
+input[type="submit"] {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 0.7rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 6px rgba(102, 126, 234, 0.07);
+}
+
+form button[type="submit"]:hover,
+form button:hover,
+button:hover,
+input[type="submit"]:hover {
+    background: linear-gradient(90deg, #764ba2, #667eea);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.13);
+}
+
+form .form-error {
+    color: #e53e3e;
+    font-size: 0.95rem;
+    margin-top: -0.8rem;
+    margin-bottom: 0.8rem;
+    text-align: left;
+}
+
+form .form-success {
+    color: #38a169;
+    font-size: 0.95rem;
+    margin-top: -0.8rem;
+    margin-bottom: 0.8rem;
+    text-align: left;
+}
+
+/* Admin category list styles */
+.admin-category-list {
+    text-align: left;
+    margin: 1.5rem auto;
+    max-width: 500px;
+    padding: 1.2rem 1rem;
+    background: #f7f9fc;
+    border-radius: 10px;
+    box-shadow: 0 1px 8px rgba(102, 126, 234, 0.06);
+}
+
+.admin-category-list ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.admin-category-list li {
+    margin-bottom: 0.7rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(102, 126, 234, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-category-list li ul {
+    margin-top: 0.5rem;
+    margin-left: 1.2rem;
+    background: none;
+    box-shadow: none;
+    padding-left: 0.5rem;
+}
+
+.admin-category-list form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+}
+
+.admin-category-list button {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.95rem;
+    border-radius: 5px;
+    background: #e53e3e;
+    color: #fff;
+    font-weight: 500;
+    border: none;
+    margin-left: 0.7rem;
+    transition: background 0.18s;
+    box-shadow: none;
+}
+
+.admin-category-list button:hover {
+    background: #c53030;
 }
 
 /* Animations */
@@ -182,38 +307,27 @@ body {
 @media (max-width: 768px) {
     .container {
         margin: 1rem;
-        padding: 2rem 1.5rem;
+        padding: 1.5rem 0.7rem;
     }
-
     .title {
-        font-size: 2rem;
+        font-size: 1.6rem;
     }
-
-    .subtitle {
-        font-size: 1.1rem;
-    }
-
     .logo {
-        font-size: 3rem;
+        font-size: 2.2rem;
+    }
+    .admin-category-list {
+        padding: 0.7rem 0.3rem;
     }
 }
 
 @media (max-width: 480px) {
     .title {
-        font-size: 1.8rem;
+        font-size: 1.2rem;
     }
-
-    .subtitle {
-        font-size: 1rem;
+    .logo {
+        font-size: 1.5rem;
     }
-
-    .social-links {
-        gap: 0.8rem;
-    }
-
-    .social-link {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
+    .admin-category-list {
+        max-width: 98vw;
     }
 }
