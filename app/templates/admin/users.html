@@ -42,7 +42,7 @@
             </div>
 
             <!-- Users Grid -->
-            <div class="products-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+            <div class="products-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
                 {% for user in users %}
                 <div class="product-card" style="height: auto;">
                     <div class="product-placeholder"
@@ -57,7 +57,33 @@
                             {{ user.role|title }}
                         </div>
                         <h3 class="product-name">{{ user.username }}</h3>
-                        <p class="product-price" style="color: #667eea;">{{ user.email }}</p>
+                        <p class="product-price" style="color: #667eea; margin-bottom: 8px;">{{ user.email }}</p>
+
+                        <!-- Contact Information -->
+                        {% if user.phone or user.whatsapp %}
+                        <div
+                            style="margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 6px;">
+                            <p style="font-size: 0.85rem; font-weight: 600; color: #495057; margin-bottom: 5px;">Contact
+                                Info:</p>
+                            {% if user.phone %}
+                            <p style="font-size: 0.8rem; color: #6c757d; margin: 2px 0;">
+                                📞 Phone: {{ user.phone }}
+                            </p>
+                            {% endif %}
+                            {% if user.whatsapp %}
+                            <p style="font-size: 0.8rem; color: #25d366; margin: 2px 0;">
+                                💬 WhatsApp: {{ user.whatsapp }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div
+                            style="margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.02); border-radius: 6px;">
+                            <p style="font-size: 0.8rem; color: #adb5bd; font-style: italic;">No contact info provided
+                            </p>
+                        </div>
+                        {% endif %}
+
                         <p class="product-location">📅 Joined: {{ user.created_at.strftime('%Y-%m-%d') if
                             user.created_at else 'N/A' }}</p>
 
@@ -66,7 +92,7 @@
                             {% if user.role != 'admin' %}
                             <form method="post" action="{{ url_for('admin.promote_user', user_id=user.id) }}"
                                 style="flex: 1;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 <button type="submit" onclick="return confirm('Promote {{ user.username }} to admin?')"
                                     style="width: 100%; background: #667eea; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer; margin-bottom: 5px;">
                                     Promote to Admin
@@ -77,7 +103,7 @@
                             {% if user.role != 'admin' %}
                             <form method="post" action="{{ url_for('admin.delete_user', user_id=user.id) }}"
                                 style="flex: 1;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 <button type="submit"
                                     onclick="return confirm('Delete user {{ user.username }}? This action cannot be undone.')"
                                     style="width: 100%; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer;">
@@ -126,6 +152,20 @@
                         {{ users|selectattr('role', 'equalto', 'user')|list|length }}
                     </div>
                     <p class="category-name">Regular Users</p>
+                </div>
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: #17a2b8; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        {{ users|selectattr('phone')|list|length }}
+                    </div>
+                    <p class="category-name">With Phone</p>
+                </div>
+                <div class="category-card">
+                    <div class="category-img"
+                        style="background: #25d366; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        {{ users|selectattr('whatsapp')|list|length }}
+                    </div>
+                    <p class="category-name">With WhatsApp</p>
                 </div>
             </div>
         </div>

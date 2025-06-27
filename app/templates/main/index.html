@@ -22,6 +22,9 @@
                     aria-label="Search products" />
                 <button type="submit" class="search-button">Search</button>
             </form>
+            <button class="nav-toggle" aria-label="toggle navigation">
+                <span class="hamburger"></span>
+            </button>
             <nav class="nav">
                 <ul>
                     <li><a href="#home" class="nav-link">Home</a></li>
@@ -199,17 +202,83 @@
             modal.style.display = 'block';
             contactInfo.innerHTML = '<div class="loading"></div><p>Loading seller information...</p>';
 
-            setTimeout(() => {
-                contactInfo.innerHTML = `
-                    <p><strong>Product:</strong> ${productName}</p>
-                    <p><strong>Contact:</strong> ${farmerEmail}</p>
-                    <p><strong>Phone:</strong> Available upon request</p>
-                    <p>Please contact the seller directly for more information about this product.</p>
-                    <div style="margin-top: 20px;">
-                        <a href="mailto:${farmerEmail}?subject=Inquiry about ${productName}" class="contact-button" style="display: inline-block; text-decoration: none; text-align: center;">Send Email</a>
-                    </div>
-                `;
-            }, 1000);
+            // Fetch farmer contact information
+            fetch(`/api/farmer/${productId}/contact`)
+                .then(response => response.json())
+                .then(data => {
+                    let contactHtml = `
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <p style="margin-bottom: 10px;"><strong>Product:</strong> ${productName}</p>
+                            <p style="margin-bottom: 10px;"><strong>Farmer:</strong> ${data.username || 'N/A'}</p>
+                            <p style="margin-bottom: 10px;"><strong>Email:</strong> ${farmerEmail}</p>
+                    `;
+
+                    if (data.phone) {
+                        contactHtml += `<p style="margin-bottom: 5px;"><strong>📞 Phone:</strong> ${data.phone}</p>`;
+                    }
+
+                    if (data.whatsapp) {
+                        contactHtml += `<p style="margin-bottom: 5px;"><strong>💬 WhatsApp:</strong> ${data.whatsapp}</p>`;
+                    }
+
+                    if (!data.phone && !data.whatsapp) {
+                        contactHtml += `<p style="color: #6c757d; font-style: italic;">No additional contact info available</p>`;
+                    }
+
+                    contactHtml += `</div>`;
+
+                    contactHtml += `
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <a href="mailto:${farmerEmail}?subject=Inquiry about ${productName}"
+                               class="contact-button"
+                               style="display: inline-block; text-decoration: none; text-align: center; flex: 1; min-width: 120px;">
+                               📧 Send Email
+                            </a>
+                    `;
+
+                    if (data.phone) {
+                        contactHtml += `
+                            <a href="tel:${data.phone}"
+                               class="contact-button"
+                               style="display: inline-block; text-decoration: none; text-align: center; flex: 1; min-width: 120px; background: #28a745;">
+                               📞 Call
+                            </a>
+                        `;
+                    }
+
+                    if (data.whatsapp) {
+                        const whatsappUrl = `https://wa.me/${data.whatsapp.replace(/[^0-9]/g, '')}?text=Hi, I'm interested in your ${productName}`;
+                        contactHtml += `
+                            <a href="${whatsappUrl}"
+                               target="_blank"
+                               class="contact-button"
+                               style="display: inline-block; text-decoration: none; text-align: center; flex: 1; min-width: 120px; background: #25d366;">
+                               💬 WhatsApp
+                            </a>
+                        `;
+                    }
+
+                    contactHtml += `</div>`;
+
+                    contactInfo.innerHTML = contactHtml;
+                })
+                .catch(error => {
+                    console.error('Error fetching contact info:', error);
+                    contactInfo.innerHTML = `
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <p style="margin-bottom: 10px;"><strong>Product:</strong> ${productName}</p>
+                            <p style="margin-bottom: 10px;"><strong>Email:</strong> ${farmerEmail}</p>
+                            <p style="color: #6c757d; font-style: italic;">Additional contact info not available</p>
+                        </div>
+                        <div>
+                            <a href="mailto:${farmerEmail}?subject=Inquiry about ${productName}"
+                               class="contact-button"
+                               style="display: inline-block; text-decoration: none; text-align: center; width: 100%;">
+                               📧 Send Email
+                            </a>
+                        </div>
+                    `;
+                });
         }
 
         // Modal functionality
@@ -217,8 +286,10 @@
             const modal = document.getElementById('contactModal');
             const closeBtn = document.querySelector('.close');
 
-            closeBtn.onclick = function () {
-                modal.style.display = 'none';
+            if (closeBtn) {
+                closeBtn.onclick = function () {
+                    modal.style.display = 'none';
+                }
             }
 
             window.onclick = function (event) {
@@ -246,6 +317,29 @@
                     }
                 });
             });
+
+            // Mobile nav toggle
+            const navToggle = document.querySelector('.nav-toggle');
+            const nav = document.querySelector('.nav');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            if (navToggle && nav) {
+                navToggle.addEventListener('click', () => {
+                    nav.classList.toggle('is-active');
+                    navToggle.classList.toggle('is-active');
+                });
+            }
+
+            if (navLinks) {
+                navLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (nav.classList.contains('is-active')) {
+                            nav.classList.remove('is-active');
+                            navToggle.classList.remove('is-active');
+                        }
+                    });
+                });
+            }
         });
     </script>
 </body>

@@ -1,5 +1,5 @@
-from app.views.main import main as main_blueprint
-from app.views.auth import auth_bp as auth_blueprint
+from app.views.main import main_bp
+from app.views.auth import auth_bp
 from app.views.farmer import farmer_bp as farmer_blueprint
 from app.views.admin import admin_bp as admin_blueprint
 from flask import Flask
@@ -9,9 +9,16 @@ def register_views(app: Flask):
     """
     Register all views (blueprints) with the Flask application.
     """
-    app.register_blueprint(main_blueprint, url_prefix='/')
-    app.register_blueprint(auth_blueprint, url_prefix='/auth')
+    app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(farmer_blueprint, url_prefix='/farmer')
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
     # Add other blueprints here as needed
     # e.g., app.register_blueprint(another_blueprint, url_prefix='/another')
+
+    # Register API blueprint if it exists
+    try:
+        from app.views.api import api_bp
+        app.register_blueprint(api_bp)
+    except ImportError:
+        pass

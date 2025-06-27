@@ -1,15 +1,161 @@
 {% extends 'base.html' %}
-{% block title %}Farmer Dashboard{% endblock %}
+{% block title %}Farmer Dashboard - AgriConnect{% endblock %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/FarmerDashboard.css') }}" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <h2>Farmer Dashboard</h2>
-    <div style="margin:2rem 0;">
-        <a href="{{ url_for('farmer.list_products') }}" class="btn" style="margin-right:1rem;">My Products</a>
-        <a href="{{ url_for('farmer.create_product') }}" class="btn">Add Product</a>
+<!-- Header -->
+<header class="header">
+    <div class="container">
+        <div class="logo-container">
+            <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
+            <h1 class="brand-name">Farmer Dashboard</h1>
+        </div>
+        <button class="nav-toggle" aria-label="toggle navigation">
+            <span class="hamburger"></span>
+        </button>
+        <nav class="nav">
+            <ul>
+                <li><a href="{{ url_for('farmer.dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('farmer.list_products') }}" class="nav-link">My Products</a></li>
+                <li><a href="{{ url_for('farmer.create_product') }}" class="nav-link">Add Product</a></li>
+                <li><a href="{{ url_for('main.index') }}" class="nav-link">Marketplace</a></li>
+                <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
+            </ul>
+        </nav>
     </div>
-    <div style="margin-top:2rem;">
-        <p>Welcome, {{ current_user.username }}!</p>
-        <p>You have <strong>{{ product_count }}</strong> products listed.</p>
+</header>
+
+<!-- Dashboard Content -->
+<section class="dashboard-section">
+    <div class="container">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <h2>Welcome back, {{ current_user.username }}! 👋</h2>
+            <p>Manage your agricultural business with ease</p>
+        </div>
+
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1>Your Farm Overview</h1>
+            <p class="subtitle">Track your products, sales, and business growth</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🛒</div>
+                <div class="stat-number">{{ product_count }}</div>
+                <div class="stat-label">Total Products</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📂</div>
+                <div class="stat-number">{{ categories_used }}</div>
+                <div class="stat-label">Categories Used</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-number">{{ "{:,.0f}".format(avg_price) if avg_price else "0" }}</div>
+                <div class="stat-label">Average Price (FCFA)</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-number">{{ price_changes }}</div>
+                <div class="stat-label">Price Updates</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2 class="section-title">Quick Actions</h2>
+            <div class="actions-grid">
+                <div class="action-card">
+                    <div class="action-icon">➕</div>
+                    <h3 class="action-title">Add New Product</h3>
+                    <p class="action-description">List a new product on the marketplace and reach more customers</p>
+                    <a href="{{ url_for('farmer.create_product') }}" class="action-button">Add Product</a>
+                </div>
+
+                <div class="action-card">
+                    <div class="action-icon">📋</div>
+                    <h3 class="action-title">Manage Products</h3>
+                    <p class="action-description">View, edit, and manage all your existing products</p>
+                    <a href="{{ url_for('farmer.list_products') }}" class="action-button">View Products</a>
+                </div>
+
+                <div class="action-card">
+                    <div class="action-icon">🛍️</div>
+                    <h3 class="action-title">Browse Marketplace</h3>
+                    <p class="action-description">Explore what other farmers are selling and get inspiration</p>
+                    <a href="{{ url_for('main.index') }}" class="action-button">Visit Marketplace</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h2 class="section-title">Recent Products</h2>
+            {% if recent_products %}
+            {% for product in recent_products %}
+            <div class="activity-item">
+                <div class="activity-icon">🌱</div>
+                <div class="activity-content">
+                    <div class="activity-title">{{ product.name }}</div>
+                    <div class="activity-time">
+                        FCFA {{ "{:,.0f}".format(product.price) }} • {{ product.category.name if product.category
+                        else 'N/A' }} •
+                        Added {{ product.created_at.strftime('%B %d, %Y') if product.created_at else 'Unknown date'
+                        }}
+                    </div>
+                </div>
+                <a href="{{ url_for('farmer.edit_product', product_id=product.id) }}" class="action-button"
+                    style="padding: 8px 16px; font-size: 0.9em;">Edit</a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="activity-item">
+                <div class="activity-icon">📝</div>
+                <div class="activity-content">
+                    <div class="activity-title">No products yet</div>
+                    <div class="activity-time">Start by adding your first product to the marketplace</div>
+                </div>
+                <a href="{{ url_for('farmer.create_product') }}" class="action-button"
+                    style="padding: 8px 16px; font-size: 0.9em;">Add Product</a>
+            </div>
+            {% endif %}
+        </div>
     </div>
-</div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <p>© 2025 AgriConnect Farmer Dashboard. Growing together, succeeding together.</p>
+    </div>
+</footer>
+
+<script>
+    const navToggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.nav');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    navToggle.addEventListener('click', () => {
+        nav.classList.toggle('is-active');
+        navToggle.classList.toggle('is-active');
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            nav.classList.remove('is-active');
+            navToggle.classList.remove('is-active');
+        });
+    });
+</script>
 {% endblock %}

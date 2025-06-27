@@ -9,6 +9,8 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
+    whatsapp = db.Column(db.String(20), nullable=True)
     password_hash = db.Column(db.String(128), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='user')  # 'farmer' or 'user'
     created_at = db.Column(db.DateTime, default=datetime.now)
@@ -20,8 +22,12 @@ class User(db.Model, UserMixin):
     contact = db.relationship('Contact', backref='user', uselist=False, lazy=True)
     kyc = db.relationship('KYC', backref='user', uselist=False, lazy=True)
 
-    def set_password(self, password: str):
+    def __init__(self, username: str, email: str, password: str, phone: str | None = None, whatsapp: str | None = None):
+        self.username = username
+        self.email = email
         self.password_hash = generate_password_hash(password)
+        self.phone = phone
+        self.whatsapp = whatsapp
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)

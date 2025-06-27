@@ -80,7 +80,7 @@
                         <div style="display: flex; gap: 5px; margin-top: 10px;">
                             <form method="post" action="{{ url_for('admin.delete_product', product_id=product.id) }}"
                                 style="flex: 1;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 <button type="submit" onclick="return confirm('Delete this product?')"
                                     style="width: 100%; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer;">Delete</button>
                             </form>

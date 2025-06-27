@@ -1,59 +1,101 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from app.models.product import Product, Category
-from app.models.product_image import ProductImage
+from app.models.product import ProductImage
 from app.extensions import db
 from app.services.upload_service import LocalFileUpload
 from app.models.price_and_delivery import PriceHistory
 from sqlalchemy import or_
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
+from wtforms import StringField, TextAreaField, DecimalField, SelectField, SubmitField, IntegerField
+from wtforms.validators import DataRequired, NumberRange, Length, Optional
+import os
+from werkzeug.utils import secure_filename
 
 farmer_bp = Blueprint('farmer', __name__, template_folder='../templates/farmer')
+
+class ProductForm(FlaskForm):
+    name = StringField('Product Name', validators=[DataRequired(), Length(min=2, max=100)])
+    description = TextAreaField('Description', validators=[DataRequired(), Length(min=10, max=500)])
+    price = DecimalField('Price (FCFA)', validators=[DataRequired(), NumberRange(min=0)])
+    quantity = IntegerField('Quantity Available', validators=[DataRequired(), NumberRange(min=1)])
+    unit = SelectField('Unit', choices=[
+        ('kg', 'Kilograms'),
+        ('g', 'Grams'),
+        ('pieces', 'Pieces'),
+        ('bunches', 'Bunches'),
+        ('bags', 'Bags'),
+        ('boxes', 'Boxes'),
+        ('liters', 'Liters')
+    ], validators=[DataRequired()])
+    category_id = SelectField('Category', coerce=int, validators=[DataRequired()])
+    location = StringField('Location/Farm Address', validators=[Optional(), Length(max=200)])
+    harvest_date = StringField('Harvest Date', validators=[Optional()], description="Optional: When was this harvested?")
+    image = FileField('Product Image', validators=[
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images only!')
+    ])
+    submit = SubmitField('Create Product')
+
+class DeleteForm(FlaskForm):
+    submit = SubmitField('Delete')
 
 @farmer_bp.route('/products/create', methods=['GET', 'POST'])
 @login_required
 def create_product():
+    form = ProductForm()
     categories = Category.query.all()
-    if request.method == 'POST':
-        name = request.form.get('name')
-        description = request.form.get('description')
-        price = request.form.get('price')
-        category_id = request.form.get('category_id')
-        images = request.files.getlist('images')
+    form.category_id.choices = [(c.id, c.name) for c in categories]
 
-        if not name or not price or not category_id:
-            flash('Name, price, and category are required.', 'danger')
-            return render_template('farmer/create_product.html', categories=categories)
+    if form.validate_on_submit():
+        try:
+            # Create new product
+            product = Product(
+                name=form.name.data,
+                description=form.description.data,
+                price=float(form.price.data),
+                quantity=form.quantity.data,
+                unit=form.unit.data,
+                category_id=form.category_id.data,
+                farmer_id=current_user.id,
+                location=form.location.data,
+                harvest_date=form.harvest_date.data
+            )
 
-        product = Product(
-            name=name,
-            description=description,
-            price=float(price),
-            category_id=int(category_id),
-            farmer_id=current_user.id
-        )
-        db.session.add(product)
-        db.session.flush()  # Get product.id before commit
+            db.session.add(product)
+            db.session.flush()  # Get the product ID
 
-        # Price tracking: record initial price
-        price_history = PriceHistory(product_id=product.id, price=float(price))
-        db.session.add(price_history)
+            # Handle image upload
+            if form.image.data:
+                filename = secure_filename(form.image.data.filename)
+                if filename:
+                    # Create unique filename
+                    import uuid
+                    file_ext = filename.rsplit('.', 1)[1].lower()
+                    unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
 
-        # Handle multiple image uploads
-        upload_service = LocalFileUpload()
-        for image in images:
-            if image and image.filename:
-                try:
-                    url = upload_service.upload_file(image, f'products/{product.id}')
-                    product_image = ProductImage(product_id=product.id, image_url=url)
+                    # Save file
+                    upload_path = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'app/static/uploads'), unique_filename)
+                    form.image.data.save(upload_path)
+
+                    # Create ProductImage record
+                    product_image = ProductImage(
+                        product_id=product.id,
+                        image_url=f"/static/uploads/{unique_filename}",
+                        is_primary=True
+                    )
                     db.session.add(product_image)
-                except Exception as e:
-                    flash(f'Image upload failed: {e}', 'danger')
 
-        db.session.commit()
-        flash('Product created successfully!', 'success')
-        return redirect(url_for('farmer.list_products'))
+            db.session.commit()
+            flash('Product created successfully!', 'success')
+            return redirect(url_for('farmer.list_products'))
 
-    return render_template('farmer/create_product.html', categories=categories)
+        except Exception as e:
+            db.session.rollback()
+            flash('Error creating product. Please try again.', 'error')
+            current_app.logger.error(f"Error creating product: {str(e)}")
+
+    return render_template('farmer/create_product.html', form=form, categories=categories)
 
 @farmer_bp.route('/products')
 @login_required
@@ -79,101 +121,118 @@ def list_products():
     )
 
     categories = Category.query.all()
+    delete_form = DeleteForm()
 
     return render_template('farmer/list_products.html',
                          products=products_pagination.items,
                          pagination=products_pagination,
                          categories=categories,
                          current_search=search_query,
-                         current_category=category_filter)
+                         current_category=category_filter,
+                         delete_form=delete_form)
 
 @farmer_bp.route('/dashboard')
+@farmer_bp.route('/',)
 @login_required
 def dashboard():
+    # Get comprehensive farmer statistics
     product_count = Product.query.filter_by(farmer_id=current_user.id).count()
-    return render_template('farmer/dashboard.html', product_count=product_count)
+
+    # Get recent products (last 5)
+    recent_products = Product.query.filter_by(farmer_id=current_user.id)\
+        .order_by(Product.created_at.desc()).limit(5).all()
+
+    # Calculate average price
+    products = Product.query.filter_by(farmer_id=current_user.id).all()
+    avg_price = sum(p.price for p in products) / len(products) if products else 0
+
+    # Get categories count
+    categories_used = len(set(p.category_id for p in products if p.category_id))
+
+    # Get price changes for this farmer's products
+    farmer_product_ids = [p.id for p in products]
+    price_changes = 0
+    if farmer_product_ids:
+        price_changes = PriceHistory.query.filter(
+            PriceHistory.product_id.in_(farmer_product_ids)
+        ).count()
+
+    return render_template('farmer/dashboard.html',
+                         product_count=product_count,
+                         recent_products=recent_products,
+                         avg_price=avg_price,
+                         categories_used=categories_used,
+                         price_changes=price_changes)
 
 @farmer_bp.route('/products/delete/<int:product_id>', methods=['POST'])
 @login_required
 def delete_product(product_id):
-    from flask_wtf.csrf import validate_csrf
-    csrf_token = request.form.get('csrf_token')
-    try:
-        validate_csrf(csrf_token)
-    except Exception:
+    form = DeleteForm()
+    if form.validate_on_submit():
+        product = Product.query.filter_by(id=product_id, farmer_id=current_user.id).first_or_404()
+        db.session.delete(product)
+        db.session.commit()
+        flash('Product deleted.', 'success')
+    else:
         flash('Invalid CSRF token.', 'danger')
-        return redirect(url_for('farmer.list_products'))
-    product = Product.query.filter_by(id=product_id, farmer_id=current_user.id).first_or_404()
-    db.session.delete(product)
-    db.session.commit()
-    flash('Product deleted.', 'success')
     return redirect(url_for('farmer.list_products'))
 
 @farmer_bp.route('/products/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
 def edit_product(product_id):
     product = Product.query.filter_by(id=product_id, farmer_id=current_user.id).first_or_404()
+    form = ProductForm(obj=product)
     categories = Category.query.all()
-    if request.method == 'POST':
-        from flask_wtf.csrf import validate_csrf
-        csrf_token = request.form.get('csrf_token')
-        try:
-            validate_csrf(csrf_token)
-        except Exception:
-            flash('Invalid CSRF token.', 'danger')
-            return redirect(url_for('farmer.list_products'))
+    form.category_id.choices = [(c.id, c.name) for c in categories]
+    delete_form = DeleteForm()
 
-        new_name = request.form.get('name')
-        new_description = request.form.get('description')
-        new_price = float(request.form.get('price'))
-        new_category_id = int(request.form.get('category_id'))
-
+    if form.validate_on_submit():
         # Price tracking: if price changed, add to PriceHistory
-        if product.price != new_price:
-            price_history = PriceHistory(product_id=product.id, price=new_price)
+        if product.price != form.price.data:
+            price_history = PriceHistory(product_id=product.id, price=float(form.price.data))
             db.session.add(price_history)
 
-        product.name = new_name
-        product.description = new_description
-        product.price = new_price
-        product.category_id = new_category_id
-        db.session.commit()
+        form.populate_obj(product)
 
         # Handle new image uploads
-        images = request.files.getlist('images')
-        upload_service = LocalFileUpload()
-        for image in images:
-            if image and image.filename:
-                try:
-                    url = upload_service.upload_file(image, f'products/{product.id}')
-                    product_image = ProductImage(product_id=product.id, image_url=url)
+        if form.image.data:
+            upload_service = LocalFileUpload()
+            try:
+                url = upload_service.upload_file(form.image.data, f'products/{product.id}')
+                # Find primary image or create new one
+                primary_image = next((img for img in product.images if img.is_primary), None)
+                if primary_image:
+                    # ToDo: delete old image from storage
+                    primary_image.image_url = url
+                else:
+                    product_image = ProductImage(product_id=product.id, image_url=url, is_primary=True)
                     db.session.add(product_image)
-                except Exception as e:
-                    flash(f'Image upload failed: {e}', 'danger')
+            except Exception as e:
+                flash(f'Image upload failed: {e}', 'danger')
+
         db.session.commit()
         flash('Product updated successfully!', 'success')
         return redirect(url_for('farmer.list_products'))
 
     # Fetch price history for monitoring
     price_history_list = PriceHistory.query.filter_by(product_id=product.id).order_by(PriceHistory.changed_at.desc()).all()
-    return render_template('farmer/edit_product.html', product=product, categories=categories, price_history=price_history_list)
+    return render_template('farmer/edit_product.html', form=form, product=product, categories=categories, price_history=price_history_list, delete_form=delete_form)
 
 @farmer_bp.route('/products/delete_image/<int:image_id>', methods=['POST'])
 @login_required
 def delete_product_image(image_id):
-    from flask_wtf.csrf import validate_csrf
-    csrf_token = request.form.get('csrf_token')
-    try:
-        validate_csrf(csrf_token)
-    except Exception:
+    form = DeleteForm()
+    if form.validate_on_submit():
+        image = ProductImage.query.get_or_404(image_id)
+        product = Product.query.filter_by(id=image.product_id, farmer_id=current_user.id).first()
+        if not product:
+            flash('Not authorized.', 'danger')
+            return redirect(url_for('farmer.list_products'))
+        # ToDo: delete image file from storage
+        db.session.delete(image)
+        db.session.commit()
+        flash('Image deleted.', 'success')
+        return redirect(url_for('farmer.edit_product', product_id=product.id))
+    else:
         flash('Invalid CSRF token.', 'danger')
         return redirect(request.referrer or url_for('farmer.list_products'))
-    image = ProductImage.query.get_or_404(image_id)
-    product = Product.query.filter_by(id=image.product_id, farmer_id=current_user.id).first()
-    if not product:
-        flash('Not authorized.', 'danger')
-        return redirect(url_for('farmer.list_products'))
-    db.session.delete(image)
-    db.session.commit()
-    flash('Image deleted.', 'success')
-    return redirect(url_for('farmer.edit_product', product_id=product.id))
