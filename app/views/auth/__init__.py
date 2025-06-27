@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, Response
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional, Regexp
 from app.extensions import db
 from app.models.user import User
@@ -19,6 +19,7 @@ class RegistrationForm(FlaskForm):
     whatsapp = StringField('WhatsApp', validators=[Optional(), Regexp(r'^\+?1?\d{9,15}$', message="Invalid WhatsApp number")])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    role = SelectField('Account Type', choices=[('user', 'General User'), ('farmer', 'Farmer')], default='user', validators=[DataRequired()])
     submit = SubmitField('Sign Up')
 
     def validate_username(self, username: StringField) -> None:
@@ -48,7 +49,8 @@ def register() -> Union[str, Response]:
             email=cast(str, form.email.data),
             password=cast(str, form.password.data),
             phone=form.phone.data,
-            whatsapp=form.whatsapp.data
+            whatsapp=form.whatsapp.data,
+            role=form.role.data
         )
         db.session.add(user)
         db.session.commit()
@@ -65,7 +67,12 @@ def login() -> Union[str, Response]:
             login_user(user)
             flash('Login successful!', 'success')
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('main.index'))
+            if next_page:
+                return redirect(next_page)
+
+            if user.role == 'farmer':
+                return redirect(url_for('farmer.dashboard'))
+            return redirect(url_for('main.index'))
         flash('Invalid email or password.', 'error')
     return render_template('auth/login.html', form=form)
 
