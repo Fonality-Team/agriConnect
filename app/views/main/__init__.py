@@ -3,10 +3,12 @@ from app.models.product import Product
 from app.models.product import Category
 from sqlalchemy import or_, desc, asc
 from sqlalchemy.exc import SQLAlchemyError
+from flask_login import login_required, current_user
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
+@login_required
 def index():
     try:
         # Get query parameters

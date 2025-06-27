@@ -27,10 +27,18 @@ def index():
     # Get all users (potential message recipients)
     users = User.query.filter(User.id != current_user.id).all()
 
+    # Get marketplace product for context (optional - can be from conversation context)
+    marketplace_product = None
+    product_id = request.args.get('product_id')
+    if product_id:
+        from app.models.product import Product
+        marketplace_product = Product.query.get(product_id)
+
     return render_template('messages/index.html',
                          title='Messages',
                          conversations=conversations,
-                         users=users)
+                         users=users,
+                         marketplace_product=marketplace_product)
 
 
 @message_bp.route('/conversation/<int:user_id>')

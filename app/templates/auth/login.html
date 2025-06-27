@@ -29,6 +29,13 @@
     <div class="login-container">
         <div class="login-card">
             <h2 class="login-header">Welcome Back</h2>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
             <form method="POST">
                 {{ form.hidden_tag() }}
                 <div class="form-group">
