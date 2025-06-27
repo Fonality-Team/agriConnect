@@ -27,7 +27,17 @@
                     <li><a href="#home" class="nav-link">Home</a></li>
                     <li><a href="#categories" class="nav-link">Categories</a></li>
                     <li><a href="#products" class="nav-link">Products</a></li>
-                    <li><a href="#contact" class="nav-link">Contact</a></li>
+                    {% if current_user.is_authenticated %}
+                    {% if current_user.role == 'admin' %}
+                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin</a></li>
+                    {% elif current_user.role == 'farmer' %}
+                    <li><a href="{{ url_for('farmer.dashboard') }}" class="nav-link">Dashboard</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
+                    {% else %}
+                    <li><a href="{{ url_for('auth.login') }}" class="nav-link">Login</a></li>
+                    <li><a href="{{ url_for('auth.register') }}" class="nav-link">Register</a></li>
+                    {% endif %}
                 </ul>
             </nav>
         </div>
@@ -231,5 +241,13 @@
                     e.preventDefault();
                     const targetId = this.getAttribute('href').substring(1);
                     const targetElement = document.getElementById(targetId);
-                    if
-    
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

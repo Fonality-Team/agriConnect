@@ -601,6 +601,134 @@ body {
     color: white;
 }
 
+/* Admin Section Text Fixes */
+.products-section h2,
+.products-section h3,
+.products-header h2,
+.products-header h3 {
+    color: #2d5c3b !important;
+}
+
+.products-header .subtitle,
+.subtitle {
+    color: #4a8b5e !important;
+}
+
+/* Category cards text fixes */
+.category-card .category-name {
+    color: #2d5c3b !important;
+}
+
+/* Product cards text fixes */
+.product-card .product-name {
+    color: #2d5c3b !important;
+}
+
+.product-card .product-description {
+    color: #666 !important;
+}
+
+.product-card .product-location {
+    color: #777 !important;
+}
+
+/* Form labels and inputs */
+form label {
+    color: #2d5c3b !important;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form textarea,
+form select {
+    color: #333 !important;
+}
+
+/* Admin specific overrides */
+.admin-section,
+.admin-section * {
+    color: inherit;
+}
+
+.admin-section h1,
+.admin-section h2,
+.admin-section h3 {
+    color: #2d5c3b !important;
+}
+
+.admin-section p {
+    color: #666 !important;
+}
+
+.admin-section .subtitle {
+    color: #4a8b5e !important;
+}
+
+/* Table text fixes */
+table {
+    color: #333 !important;
+}
+
+table th {
+    color: #2d5c3b !important;
+}
+
+table td {
+    color: #666 !important;
+}
+
+/* Modal text fixes */
+.modal-content {
+    color: #333 !important;
+}
+
+.modal-content h3 {
+    color: #2d5c3b !important;
+}
+
+/* Button text should remain white when appropriate */
+.cta-button,
+.search-button,
+.contact-button,
+.filter-button.active {
+    color: white !important;
+}
+
+/* Filter button inactive state */
+.filter-button:not(.active) {
+    color: #28a745 !important;
+}
+
+/* Alert message text */
+.error-message {
+    color: #c33 !important;
+}
+
+.success-message {
+    color: #363 !important;
+}
+
+/* Navigation text should remain white */
+.nav-link {
+    color: white !important;
+}
+
+.brand-name {
+    color: white !important;
+}
+
+/* Footer text should remain white */
+.footer,
+.footer p,
+.footer a {
+    color: white !important;
+}
+
+.footer-links a {
+    color: #b7e4c7 !important;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .header .container {

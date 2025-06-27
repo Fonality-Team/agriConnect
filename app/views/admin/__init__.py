@@ -143,8 +143,35 @@ def promote_user(user_id):
 @login_required
 @admin_required
 def price_tracking():
-    price_history = PriceHistory.query.order_by(PriceHistory.changed_at.desc()).all()
-    return render_template('admin/price_tracking.html', price_history=price_history)
+    # Get price history with better ordering for charts
+    price_history = PriceHistory.query.join(Product).order_by(
+        PriceHistory.changed_at.desc()
+    ).limit(100).all()  # Limit to last 100 changes for performance
+
+    # Calculate statistics
+    stats = {
+        'total_changes': PriceHistory.query.count(),
+        'unique_products': len(set(p.product_id for p in price_history if p.product_id)),
+        'average_price': 0,
+        'highest_price': 0,
+        'lowest_price': 0
+    }
+
+    if price_history:
+        prices = [p.price for p in price_history]
+        stats['average_price'] = sum(prices) / len(prices)
+        stats['highest_price'] = max(prices)
+        stats['lowest_price'] = min(prices)
+
+    # Get recent price trends (last 30 days) for better chart visualization
+    recent_cutoff = datetime.now() - timedelta(days=30)
+    recent_price_history = PriceHistory.query.filter(
+        PriceHistory.changed_at >= recent_cutoff
+    ).join(Product).order_by(PriceHistory.changed_at.asc()).all()
+
+    return render_template('admin/price_tracking.html',
+                         price_history=recent_price_history if recent_price_history else price_history,
+                         stats=stats)
 
 @admin_bp.route('/products')
 @login_required
@@ -153,4 +180,78 @@ def list_products():
     search_query = request.args.get('q', '').strip()
     category_filter = request.args.get('category', '')
     page = request.args.get('page', 1, type=int)
-    per
+    per_page = 20
+    products_query = Product.query
+    if search_query:
+        products_query = products_query.filter(
+            Product.name.ilike(f"%{search_query}%")
+        )
+    if category_filter:
+        products_query = products_query.join(Category).filter(Category.name == category_filter)
+    products_pagination = products_query.paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    categories = Category.query.all()
+    return render_template('admin/products.html',
+                         products=products_pagination.items,
+                         pagination=products_pagination,
+                         categories=categories,
+                         current_search=search_query,
+                         current_category=category_filter,
+                         total_products=products_pagination.total)
+
+@admin_bp.route('/products/delete/<int:product_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_product(product_id):
+    from flask_wtf.csrf import validate_csrf
+    csrf_token = request.form.get('csrf_token')
+    try:
+        validate_csrf(csrf_token)
+    except Exception:
+        flash('Invalid CSRF token.', 'danger')
+        return redirect(url_for('admin.list_products'))
+    product = Product.query.get_or_404(product_id)
+    db.session.delete(product)
+    db.session.commit()
+    flash('Product deleted successfully.', 'success')
+    return redirect(url_for('admin.list_products'))
+
+@admin_bp.route('/analytics')
+@login_required
+@admin_required
+def analytics():
+    # Enhanced dashboard with analytics
+    total_users = User.query.count()
+    total_farmers = User.query.filter_by(role='farmer').count()
+    total_products = Product.query.count()
+    total_categories = Category.query.count()
+
+    # Recent activity
+    recent_products = Product.query.order_by(Product.created_at.desc()).limit(10).all()
+    recent_users = User.query.order_by(User.id.desc()).limit(10).all()
+
+    # Price changes this week
+    week_ago = datetime.now() - timedelta(days=7)
+    recent_price_changes = PriceHistory.query.filter(
+        PriceHistory.changed_at >= week_ago
+    ).count()
+
+    # Products by category with proper handling
+    try:
+        category_stats = db.session.query(
+            Category.name,
+            func.count(Product.id).label('product_count')
+        ).outerjoin(Product).group_by(Category.name).all()
+    except Exception:
+        category_stats = []
+
+    return render_template('admin/analytics.html',
+                         total_users=total_users,
+                         total_farmers=total_farmers,
+                         total_products=total_products,
+                         total_categories=total_categories,
+                         recent_products=recent_products,
+                         recent_users=recent_users,
+                         recent_price_changes=recent_price_changes,
+                         category_stats=category_stats)
