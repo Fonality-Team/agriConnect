@@ -46,9 +46,19 @@ def index():
 def conversation(user_id):
     """
     Get or create a conversation with a specific user.
+    Returns JSON for AJAX requests, redirects to messages page for browser requests.
     """
     other_user = User.query.get_or_404(user_id)
     product_id = request.args.get('product_id')
+
+    # Check if this is an AJAX request
+    # For browser requests (like clicking a link), the Accept header usually contains text/html
+    # For AJAX requests, it usually contains application/json or has X-Requested-With header
+    is_ajax = (request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+               request.headers.get('Content-Type') == 'application/json' or
+               (request.headers.get('Accept') and
+                'application/json' in request.headers.get('Accept') and
+                'text/html' not in request.headers.get('Accept')))
 
     # Find existing conversation for this product
     conversation = None
@@ -89,7 +99,15 @@ def conversation(user_id):
             db.session.commit()
 
     if not conversation:
-        return jsonify({'error': 'Conversation not found'}), 404
+        if is_ajax:
+            return jsonify({'error': 'Conversation not found'}), 404
+        else:
+            flash('Conversation not found', 'error')
+            return redirect(url_for('message.index'))
+
+    # For browser requests, redirect to messages page with conversation loaded
+    if not is_ajax:
+        return redirect(url_for('message.index') + f'?conversation_id={conversation.id}&user_id={user_id}&product_id={product_id or ""}')
 
     # Get messages for this conversation
     messages = conversation.get_messages()

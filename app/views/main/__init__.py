@@ -79,8 +79,9 @@ def index():
                              current_sort='name',
                              current_order='asc')
 
-@main_bp.route('/api/products')
-def api_products():
-    """API endpoint for AJAX product loading"""
-    # ...existing code for API functionality...
-    pass
+
+
+@main_bp.route('/about')
+def about():
+    """Render the About page."""
+    return render_template('main/contact.html')

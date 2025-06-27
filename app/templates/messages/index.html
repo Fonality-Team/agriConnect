@@ -739,8 +739,8 @@
             const pathParts = window.location.pathname.split('/');
             const urlParams = new URLSearchParams(window.location.search);
 
+            // Handle URL pattern: /messages/conversation/{user_id}
             if (pathParts.length >= 4 && pathParts[1] === 'messages' && pathParts[2] === 'conversation') {
-                // Extract user ID from URL: /messages/conversation/{user_id}
                 const userId = pathParts[3];
                 const productId = urlParams.get('product_id');
 
@@ -761,6 +761,35 @@
 
                     // Load the conversation automatically
                     loadConversation(userId, username, productId);
+                }
+            }
+            // Handle URL pattern: /messages/?conversation_id=...&user_id=...&product_id=...
+            else if (urlParams.get('conversation_id') && urlParams.get('user_id')) {
+                const userId = urlParams.get('user_id');
+                const productId = urlParams.get('product_id');
+                const conversationId = urlParams.get('conversation_id');
+
+                if (userId) {
+                    // Find the username from conversations or users list
+                    const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
+                    let username = 'Unknown User';
+
+                    if (conversationItem) {
+                        username = conversationItem.querySelector('.conversation-name').textContent;
+                    } else {
+                        // Try to find in the users list (for new conversations)
+                        const userItem = document.querySelector(`[data-user-id="${userId}"]`);
+                        if (userItem) {
+                            username = userItem.textContent.trim();
+                        }
+                    }
+
+                    // Load the conversation automatically
+                    loadConversation(userId, username, productId);
+                    
+                    // Clean up the URL after loading the conversation
+                    const cleanUrl = window.location.pathname;
+                    window.history.replaceState({}, '', cleanUrl);
                 }
             }
 

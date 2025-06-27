@@ -1,0 +1,162 @@
+body {
+  background-color: rgba(209, 244, 219, 1);
+  margin: 0;
+}
+
+.first-div-one {
+  position: relative;
+}
+
+.first-div {
+  background-image: url("Garri.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: 3;
+  height: 300px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.first-div::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(173, 16, 16, 0.5);
+  z-index: 2;
+}
+
+.about-title {
+  position: relative;
+  z-index: 4;
+  color: black;
+}
+
+.second {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+}
+
+.second-img {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.about-img {
+  max-width: 100%;
+  height: auto;
+}
+
+.second-info {
+  flex: 2;
+}
+
+.AgriConnect {
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.agri-description {
+  margin-top: 10px;
+}
+
+.techstack-div {
+  background-color: rgba(173, 229, 195, 1);
+  padding: 20px;
+  text-align: center;
+}
+
+.techstack {
+  font-size: 1.8em;
+  font-weight: bold;
+}
+
+.teck-div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stack-card {
+  width: 220px;
+  margin: 10px;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  background-color: white;
+}
+
+.stack-img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
+.stack-name {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.third-div {
+  padding: 20px;
+}
+
+.Members {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.member-card {
+  width: 200px;
+  margin: 10px;
+  text-align: center;
+}
+
+.member-img {
+  max-width: 100%;
+  height: auto;
+}
+
+.third-div {
+  background-color: rgba(173, 229, 195, 1);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin: 20px;
+  text-align: center;
+}
+
+.third-title {
+  font-size: 1.8em;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.Members {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.member-card {
+  width: 200px;
+  margin: 10px;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  background-color: white;
+}
+
+.member-img {
+  max-width: 100%;
+  height: auto;
+}
