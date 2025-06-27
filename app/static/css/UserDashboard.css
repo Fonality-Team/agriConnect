@@ -321,7 +321,7 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
     position: relative;
-    height: 380px;
+    min-height: 380px;
     display: flex;
     flex-direction: column;
 }
