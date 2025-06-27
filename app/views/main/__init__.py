@@ -1,11 +1,14 @@
 from flask import Blueprint, render_template, request, flash
-from app.models.product import Product, Category
+from app.models.product import Product
+from app.models.product import Category
 from sqlalchemy import or_, desc, asc
 from sqlalchemy.exc import SQLAlchemyError
+from flask_login import login_required, current_user
 
-main = Blueprint('main', __name__)
+main_bp = Blueprint('main', __name__)
 
-@main.route('/')
+@main_bp.route('/')
+@login_required
 def index():
     try:
         # Get query parameters
@@ -22,10 +25,8 @@ def index():
         # Apply search filter
         if search_query:
             products_query = products_query.filter(
-                or_(
-                    Product.name.ilike(f"%{search_query}%"),
-                    Product.description.ilike(f"%{search_query}%")
-                )
+                Product.name.contains(search_query) |
+                Product.description.contains(search_query)
             )
 
         # Apply category filter
@@ -78,8 +79,9 @@ def index():
                              current_sort='name',
                              current_order='asc')
 
-@main.route('/api/products')
-def api_products():
-    """API endpoint for AJAX product loading"""
-    # ...existing code for API functionality...
-    pass
+
+
+@main_bp.route('/about')
+def about():
+    """Render the About page."""
+    return render_template('main/contact.html')

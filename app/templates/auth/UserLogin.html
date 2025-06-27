@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgriConnect</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/UserLogin.css')}}" />
+    <link rel="icon" href="agrilogo.PNG" type="image/png" </head>
+
+<body>
+    <div class="header">
+        <div class="left-header">
+            <img src="agrilogo.PNG" alt="" class="logo" />
+            <p class="agi">AgriConnect</p>
+        </div>
+        <div class="right">
+            <button>About</button>
+        </div>
+    </div>
+    <div class="login-div">
+        <h1 class="login-header">Login</h1>
+        <form class="login-form">
+            <div class="input-div">
+                <input type="text" class="username" name="username" required placeholder="Username : " />
+            </div>
+            <div class="input-div">
+                <input type="password" class="password" name="password" required placeholder="password :" />
+            </div>
+            <button type="submit" class="login-button">Login</button>
+        </form>
+        <div class="dont-have">
+            <p class="dont-word">
+                Don't have an account? <a href="userregister.html">Register</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

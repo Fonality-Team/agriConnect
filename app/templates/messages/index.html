@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+        }
+
+        /* Header */
+        .header {
+            background: rgb(40, 167, 69);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-container {
+            position: relative;
+            margin-left: 30px;
+        }
+
+        .search-input {
+            padding: 10px 40px 10px 20px;
+            border: none;
+            border-radius: 25px;
+            width: 300px;
+            background-color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fff;
+            background-image: url('/static/img/maleAvatar.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 70px);
+            max-width: 100%;
+            margin: 0;
+            background-color: white;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: #ffffff;
+            border-right: 1px solid #e1e8ed;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .conversations {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .conversation-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .conversation-item.active {
+            background-color: #e3f2fd;
+        }
+
+        .user-avatar-small {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #ddd;
+            background-image: url('/static/img/maleAvatar.jpg');
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .conversation-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .conversation-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .conversation-preview {
+            font-size: 13px;
+            color: #666;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Marketplace Section */
+        .marketplace-section {
+            background-color: #fff;
+            border-bottom: 1px solid #e1e8ed;
+            padding: 20px;
+        }
+
+        .marketplace-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .listing-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .listing-title {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .listing-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .rate-seller-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .rate-seller-btn:hover {
+            background-color: #218838;
+        }
+
+        .report-seller-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .report-seller-btn:hover {
+            background-color: #c82333;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            background-color: #f8f9fa;
+
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .bot-message,
+        .user-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+        }
+
+        .user-message {
+            align-self: flex-end;
+        }
+
+        .message-bubble {
+            width: 300px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+
+        }
+
+        .bot-message .message-bubble {
+            background-color: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 6px;
+
+        }
+
+        .user-message .message-bubble {
+            background-color: #d1fec5;
+            color: #333;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message-time {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .message-sender {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .message-input-area {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .message-input input:focus {
+            border-color: #2d5c3b;
+        }
+
+        .send-btn {
+            background-color: #2d5c3b;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .send-btn:hover {
+            background-color: #1f3d27;
+        }
+
+        .welcome-message {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6c757d;
+            font-size: 18px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #6c757d;
+            background-color: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 200px;
+            }
+
+            .chat-area {
+                height: calc(100vh - 200px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">AgriChat</div>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search messages...">
+                <button class="search-btn">Search</button>
+            </div>
+        </div>
+        <div class="user-avatar"></div>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar with conversations -->
+        <div class="sidebar">
+            <div class="conversations" id="conversations">
+                {% for conversation in conversations %}
+                <div class="conversation-item" data-user-id="{{ conversation.get_other_user(current_user.id).id }}">
+                    <div class="user-avatar-small"></div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">{{ conversation.get_other_user(current_user.id).username }}</div>
+                        <div class="conversation-preview">
+                            {% if conversation.last_message %}
+                            {{ conversation.last_message.content[:50] }}...
+                            {% else %}
+                            Hello, how are you?
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="padding: 20px; text-align: center; opacity: 0.7;">
+                    No conversations yet. Start a new message!
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Chat area -->
+        <div class="chat-area">
+            <!-- Marketplace listing section -->
+            <div class="marketplace-section" id="marketplace-section" {% if not marketplace_product
+                %}style="display: none;" {% endif %}>
+                <div class="marketplace-header">
+                    <h3>Product Information</h3>
+                </div>
+                <div class="listing-content">
+                    <div class="listing-title" id="product-info">
+                        {% if marketplace_product %}
+                        FCFA {{ "{:,.0f}".format(marketplace_product.price) }} · {{ marketplace_product.name }}
+                        {% else %}
+                        Product information will appear here
+                        {% endif %}
+                    </div>
+                    <div class="listing-actions">
+                        <button class="rate-seller-btn">Rate seller</button>
+                        <button class="report-seller-btn">Report seller</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages area -->
+            <div class="messages-container" id="messages-container">
+                <div class="welcome-message">Select a conversation to start chatting</div>
+            </div>
+
+            <!-- Message input -->
+            <div class="message-input-area" id="message-input-area">
+                <div class="message-input">
+                    <input type="text" id="message-input" placeholder="Type a message..."
+                        onkeypress="handleKeyPress(event)">
+                    <button class="send-btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Message Modal -->
+    <div id="newMessageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Start New Conversation</h3>
+                <span class="close" onclick="closeNewMessageModal()">×</span>
+            </div>
+            <div class="user-list">
+                {% for user in users %}
+                <div class="user-item" onclick="startConversation({{ user.id }}, '{{ user.username }}')">
+                    <span>{{ user.username }}</span>
+                    <span class="user-role">{{ user.role }}</span>
+                </div>
+                {% else %}
+                <div style="padding: 20px; text-align: center; color: #6c757d;">
+                    No other users available
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        let socket = io();
+        const currentUserId = {{ current_user.id }};
+        let currentConversationId = null;
+        let currentReceiverId = null;
+
+        // Socket.IO event handlers
+        socket.on('connect', function () {
+            console.log('Connected to server');
+        });
+
+        socket.on('new_message', function (data) {
+            console.log('New message received:', data);
+            console.log('Current receiver ID:', currentReceiverId, typeof currentReceiverId);
+            console.log('Sender ID:', data.sender_id, typeof data.sender_id);
+
+            const senderId = parseInt(data.sender_id);
+            const currentReceiverIdInt = parseInt(currentReceiverId);
+            const senderUsername = data.sender_username;
+
+            // If the conversation with the sender is currently active, display the message
+            if (senderId === currentReceiverIdInt && currentReceiverIdInt !== null) {
+                console.log('Displaying message in active chat for sender:', senderUsername);
+                displayMessage(data.content, senderUsername, data.created_at, false);
+            } else {
+                console.log('Message not for current active chat. SenderId:', senderId, 'CurrentReceiverId:', currentReceiverIdInt);
+            }
+
+            const conversationsContainer = document.getElementById('conversations');
+            let conversationItem = document.querySelector(`.conversation-item[data-user-id="${senderId}"]`);
+
+            // If a conversation item for the sender doesn't exist, create it
+            if (!conversationItem) {
+                // Remove "No conversations" message if it exists
+                const noConvMsg = conversationsContainer.querySelector('div[style*="text-align: center"]');
+                if (noConvMsg) {
+                    noConvMsg.remove();
+                }
+
+                conversationItem = document.createElement('div');
+                conversationItem.classList.add('conversation-item');
+                conversationItem.setAttribute('data-user-id', senderId);
+                conversationItem.innerHTML = `
+                    <div class="user-avatar-small"></div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">${senderUsername}</div>
+                        <div class="conversation-preview">New conversation</div>
+                    </div>
+                `;
+                // Add the click listener when creating
+                conversationItem.addEventListener('click', () => loadConversation(senderId, senderUsername));
+                conversationsContainer.appendChild(conversationItem);
+            }
+
+            // Update the conversation preview
+            const nameDiv = conversationItem.querySelector('.conversation-name');
+            const previewDiv = conversationItem.querySelector('.conversation-preview');
+
+            if (nameDiv && previewDiv) {
+                // Update existing elements to preserve event listeners
+                nameDiv.textContent = senderUsername;
+                previewDiv.textContent = data.content.substring(0, 50) + (data.content.length > 50 ? '...' : '');
+            } else {
+                // Recreate the HTML if elements don't exist
+                conversationItem.innerHTML = `
+                    <div class="user-avatar-small"></div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">${senderUsername}</div>
+                        <div class="conversation-preview">
+                            ${data.content.substring(0, 50)}${data.content.length > 50 ? '...' : ''}
+                        </div>
+                    </div>
+                `;
+                // Re-add the click listener since we recreated the HTML
+                conversationItem.addEventListener('click', () => loadConversation(senderId, senderUsername));
+            }
+
+            // Move the updated/new conversation to the top of the list
+            conversationsContainer.insertBefore(conversationItem, conversationsContainer.firstChild);
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('newMessageModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Handle key press in message input
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Send message function
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+
+            if (message && currentReceiverId) {
+                // Send via AJAX instead of socket for better conversation tracking
+                fetch('/messages/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        receiver_id: currentReceiverId,
+                        content: message,
+                        conversation_id: currentConversationId
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update conversation ID if returned
+                            if (data.conversation_id) {
+                                currentConversationId = data.conversation_id;
+                            }
+                            // Display message immediately
+                            displayMessage(message, 'You', new Date().toISOString(), true);
+                            messageInput.value = '';
+                        } else {
+                            console.error('Error sending message:', data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error sending message:', error);
+                    });
+            }
+        }
+
+        // Display message in chat
+        function displayMessage(content, senderName, timestamp, isOwn) {
+            const messagesContainer = document.getElementById('messages-container');
+
+            // Remove welcome message if present
+            const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isOwn ? 'user-message' : 'bot-message';
+
+            // Format timestamp
+            const date = new Date(timestamp);
+            const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-sender">${senderName}</div>
+                    ${content}
+                    <div class="message-time">${formattedTime}</div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Load conversation
+        function loadConversation(userId, username, productId = null) {
+            currentReceiverId = userId;
+            currentConversationId = null; // Reset conversation ID
+
+            // Update active conversation
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-user-id="${userId}"]`).classList.add('active');
+
+            // Clear messages
+            const messagesContainer = document.getElementById('messages-container');
+            messagesContainer.innerHTML = '';
+
+            // Build URL with product ID if provided
+            let url = `/messages/conversation/${userId}`;
+            if (productId) {
+                url += `?product_id=${productId}`;
+            }
+
+            // Load messages via AJAX
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.messages) {
+                        // Set conversation ID for future messages
+                        currentConversationId = data.conversation_id;
+
+                        data.messages.forEach(message => {
+                            const isOwn = message.sender_id == currentUserId;
+                            displayMessage(message.content, message.sender_username, message.created_at, isOwn);
+                        });
+                    }
+
+                    // Update marketplace section if product info is available
+                    if (data.product_id && data.product_name) {
+                        const marketplaceSection = document.getElementById('marketplace-section');
+                        const productInfo = document.getElementById('product-info');
+                        marketplaceSection.style.display = 'block';
+                        productInfo.textContent = `${data.product_name}`;
+                    }
+                })
+                .catch(error => console.error('Error loading conversation:', error));
+        }
+
+        // Open new message modal
+        function openNewMessageModal() {
+            document.getElementById('newMessageModal').style.display = 'block';
+        }
+
+        // Close new message modal
+        function closeNewMessageModal() {
+            document.getElementById('newMessageModal').style.display = 'none';
+        }
+
+        // Start conversation
+        function startConversation(userId, username) {
+            closeNewMessageModal();
+            loadConversation(userId, username);
+        }
+
+        // Initialize conversation click handlers
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if we're coming from a direct link (e.g., from marketplace)
+            const pathParts = window.location.pathname.split('/');
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Handle URL pattern: /messages/conversation/{user_id}
+            if (pathParts.length >= 4 && pathParts[1] === 'messages' && pathParts[2] === 'conversation') {
+                const userId = pathParts[3];
+                const productId = urlParams.get('product_id');
+
+                if (userId) {
+                    // Find the username from conversations or users list
+                    const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
+                    let username = 'Unknown User';
+
+                    if (conversationItem) {
+                        username = conversationItem.querySelector('.conversation-name').textContent;
+                    } else {
+                        // Try to find in the users list (for new conversations)
+                        const userItem = document.querySelector(`[data-user-id="${userId}"]`);
+                        if (userItem) {
+                            username = userItem.textContent.trim();
+                        }
+                    }
+
+                    // Load the conversation automatically
+                    loadConversation(userId, username, productId);
+                }
+            }
+            // Handle URL pattern: /messages/?conversation_id=...&user_id=...&product_id=...
+            else if (urlParams.get('conversation_id') && urlParams.get('user_id')) {
+                const userId = urlParams.get('user_id');
+                const productId = urlParams.get('product_id');
+                const conversationId = urlParams.get('conversation_id');
+
+                if (userId) {
+                    // Find the username from conversations or users list
+                    const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
+                    let username = 'Unknown User';
+
+                    if (conversationItem) {
+                        username = conversationItem.querySelector('.conversation-name').textContent;
+                    } else {
+                        // Try to find in the users list (for new conversations)
+                        const userItem = document.querySelector(`[data-user-id="${userId}"]`);
+                        if (userItem) {
+                            username = userItem.textContent.trim();
+                        }
+                    }
+
+                    // Load the conversation automatically
+                    loadConversation(userId, username, productId);
+                    
+                    // Clean up the URL after loading the conversation
+                    const cleanUrl = window.location.pathname;
+                    window.history.replaceState({}, '', cleanUrl);
+                }
+            }
+
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    const userId = this.dataset.userId;
+                    const username = this.querySelector('.conversation-name').textContent;
+                    loadConversation(userId, username);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

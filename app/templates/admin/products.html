@@ -1,143 +1,99 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'admin/base.html' %}
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/UserDashboard.css') }}" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
-    <title>Manage Products - AgriConnect Admin</title>
-</head>
 
-<body>
-    <!-- Admin Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo-container">
-                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
-                <h1 class="brand-name">Product Management</h1>
-            </div>
-            <form method="get" class="search-form">
-                <input type="text" name="q" placeholder="Search products..." value="{{ current_search }}" />
-                <select name="category">
-                    <option value="">All Categories</option>
-                    {% for category in categories %}
-                    <option value="{{ category.name }}" {% if current_category==category.name %}selected{% endif %}>{{
-                        category.name }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="search-button">Search</button>
-            </form>
-            <nav class="nav">
-                <ul>
-                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
-                    <li><a href="{{ url_for('main.index') }}" class="nav-link">Main Site</a></li>
-                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+{% block content %}
 
-    <!-- Products Management -->
-    <section class="products-section">
-        <div class="container">
-            <div class="products-header">
-                <h2>Products Management ({{ total_products }} total)</h2>
-                {% if current_search or current_category %}
-                <div class="active-filters">
-                    {% if current_search %}
-                    <span class="filter-tag">Search: "{{ current_search }}" <a
-                            href="{{ url_for('admin.list_products') }}">×</a></span>
-                    {% endif %}
-                    {% if current_category %}
-                    <span class="filter-tag">Category: {{ current_category }} <a
-                            href="{{ url_for('admin.list_products', q=current_search) }}">×</a></span>
-                    {% endif %}
-                </div>
+<!-- Products Management -->
+<section class="products-section">
+    <div class="container">
+        <div class="products-header">
+            <h2>Products Management ({{ total_products }} total)</h2>
+            {% if current_search or current_category %}
+            <div class="active-filters">
+                {% if current_search %}
+                <span class="filter-tag">Search: "{{ current_search }}" <a
+                        href="{{ url_for('admin.list_products') }}">×</a></span>
                 {% endif %}
-            </div>
-
-            <div class="products-grid">
-                {% for product in products %}
-                <div class="product-card">
-                    {% if product.images %}
-                    <img src="{{ product.images[0].image_url }}" alt="{{ product.name }}" loading="lazy" />
-                    {% else %}
-                    <div class="product-placeholder">No Image</div>
-                    {% endif %}
-                    <div class="product-info">
-                        <div class="product-category">{{ product.category.name if product.category else 'N/A' }}</div>
-                        <h3 class="product-name">{{ product.name }}</h3>
-                        <p class="product-price">FCFA {{ "{:,.0f}".format(product.price) }}</p>
-                        <p class="product-description">{{ product.description[:80] }}{% if product.description|length >
-                            80 %}...{% endif %}</p>
-                        <p class="product-location">🧑‍🌾 {{ product.farmer.username if product.farmer else 'Unknown' }}
-                        </p>
-                        <p class="product-location">📅 {{ product.created_at.strftime('%Y-%m-%d') if product.created_at
-                            else 'N/A' }}</p>
-
-                        <!-- Admin Actions -->
-                        <div style="display: flex; gap: 5px; margin-top: 10px;">
-                            <form method="post" action="{{ url_for('admin.delete_product', product_id=product.id) }}"
-                                style="flex: 1;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" onclick="return confirm('Delete this product?')"
-                                    style="width: 100%; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer;">Delete</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <div class="no-products">
-                    <h3>No products found</h3>
-                    <p>Try adjusting your search criteria.</p>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- Pagination -->
-            {% if pagination and pagination.pages > 1 %}
-            <div class="pagination">
-                {% if pagination.has_prev %}
-                <a
-                    href="{{ url_for('admin.list_products', page=pagination.prev_num, q=current_search, category=current_category) }}">‹
-                    Previous</a>
-                {% else %}
-                <span class="disabled">‹ Previous</span>
-                {% endif %}
-
-                {% for page_num in pagination.iter_pages() %}
-                {% if page_num %}
-                {% if page_num != pagination.page %}
-                <a
-                    href="{{ url_for('admin.list_products', page=page_num, q=current_search, category=current_category) }}">{{
-                    page_num }}</a>
-                {% else %}
-                <span class="current">{{ page_num }}</span>
-                {% endif %}
-                {% else %}
-                <span>…</span>
-                {% endif %}
-                {% endfor %}
-
-                {% if pagination.has_next %}
-                <a
-                    href="{{ url_for('admin.list_products', page=pagination.next_num, q=current_search, category=current_category) }}">Next
-                    ›</a>
-                {% else %}
-                <span class="disabled">Next ›</span>
+                {% if current_category %}
+                <span class="filter-tag">Category: {{ current_category }} <a
+                        href="{{ url_for('admin.list_products', q=current_search) }}">×</a></span>
                 {% endif %}
             </div>
             {% endif %}
         </div>
-    </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 AgriConnect Admin Panel. All rights reserved.</p>
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card">
+                {% if product.images %}
+                <img src="{{ product.images[0].image_url }}" alt="{{ product.name }}" loading="lazy" />
+                {% else %}
+                <div class="product-placeholder">No Image</div>
+                {% endif %}
+                <div class="product-info">
+                    <div class="product-category">{{ product.category.name if product.category else 'N/A' }}</div>
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-price">FCFA {{ "{:,.0f}".format(product.price) }}</p>
+                    <p class="product-description">{{ product.description[:80] }}{% if product.description|length >
+                        80 %}...{% endif %}</p>
+                    <p class="product-location">🧑‍🌾 {{ product.farmer.username if product.farmer else 'Unknown' }}
+                    </p>
+                    <p class="product-location">📅 {{ product.created_at.strftime('%Y-%m-%d') if product.created_at
+                        else 'N/A' }}</p>
+
+                    <!-- Admin Actions -->
+                    <div style="display: flex; gap: 5px; margin-top: 10px;">
+                        <form method="post" action="{{ url_for('admin.delete_product', product_id=product.id) }}"
+                            style="flex: 1;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" onclick="return confirm('Delete this product?')"
+                                style="width: 100%; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer;">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-products">
+                <h3>No products found</h3>
+                <p>Try adjusting your search criteria.</p>
+            </div>
+            {% endfor %}
         </div>
-    </footer>
-</body>
 
-</html>
+        <!-- Pagination -->
+        {% if pagination and pagination.pages > 1 %}
+        <div class="pagination">
+            {% if pagination.has_prev %}
+            <a
+                href="{{ url_for('admin.list_products', page=pagination.prev_num, q=current_search, category=current_category) }}">‹
+                Previous</a>
+            {% else %}
+            <span class="disabled">‹ Previous</span>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+            {% if page_num != pagination.page %}
+            <a href="{{ url_for('admin.list_products', page=page_num, q=current_search, category=current_category) }}">{{
+                page_num }}</a>
+            {% else %}
+            <span class="current">{{ page_num }}</span>
+            {% endif %}
+            {% else %}
+            <span>…</span>
+            {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <a
+                href="{{ url_for('admin.list_products', page=pagination.next_num, q=current_search, category=current_category) }}">Next
+                ›</a>
+            {% else %}
+            <span class="disabled">Next ›</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

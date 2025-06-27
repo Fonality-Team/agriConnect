@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/UserDashboard.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+    <title>Admin Dashboard - AgriConnect</title>
+</head>
+
+<style>
+    body {
+        min-height: 100vh;
+    }
+
+    main {
+        min-height: 85vh;
+    }
+</style>
+
+<body>
+    <!-- Admin Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-container">
+                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
+                <h1 class="brand-name">AgriConnect Admin</h1>
+            </div>
+            <nav class="nav">
+                <ul>
+                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
+                    <li><a href="{{ url_for('admin.list_users') }}" class="nav-link">Users</a></li>
+                    <li><a href="{{ url_for('admin.list_categories') }}" class="nav-link">Categories</a></li>
+                    <li><a href="{{ url_for('admin.list_products') }}" class="nav-link">Products</a></li>
+                    <li><a href="{{ url_for('admin.analytics') }}" class="nav-link">Analytics</a></li>
+                    <li><a href="{{ url_for('main.index') }}" class="nav-link">Main Site</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}
+
+        {% endblock content%}
+    </main>
+
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AgriConnect Admin Panel. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

@@ -1,225 +1,320 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'admin/base.html' %}
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/UserDashboard.css') }}" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
-    <script
-        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <title>Price Tracking - AgriConnect Admin</title>
-</head>
 
-<body>
-    <!-- Admin Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo-container">
-                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
-                <h1 class="brand-name">Price Tracking</h1>
-            </div>
-            <nav class="nav">
-                <ul>
-                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
-                    <li><a href="{{ url_for('admin.list_users') }}" class="nav-link">Users</a></li>
-                    <li><a href="{{ url_for('admin.list_categories') }}" class="nav-link">Categories</a></li>
-                    <li><a href="{{ url_for('admin.list_products') }}" class="nav-link">Products</a></li>
-                    <li><a href="{{ url_for('admin.analytics') }}" class="nav-link">Analytics</a></li>
-                    <li><a href="{{ url_for('main.index') }}" class="nav-link">Main Site</a></li>
-                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Price Tracking Content -->
-    <section class="products-section">
-        <div class="container">
-            <div class="products-header">
-                <h2>Product Price Change History</h2>
-                <p class="subtitle">Monitor price changes across all products on the platform</p>
-            </div>
-
-            {% if price_history %}
-            <!-- Price Chart Section -->
-            <div class="products-header" style="margin-top: 40px;">
-                <h3>Price Trends Over Time</h3>
-                <p class="subtitle">Visual representation of price changes across products</p>
-            </div>
-
-            <div
-                style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); margin-bottom: 40px; height: 400px;">
-                <canvas id="priceChart"></canvas>
-            </div>
-
-            <!-- Price History Cards -->
-            <div class="products-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
-                {% for entry in price_history %}
-                <div class="product-card" style="height: auto;">
-                    <div class="product-placeholder"
-                        style="height: 80px; background: linear-gradient(135deg, #28a745, #20c997); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                        📊
-                    </div>
-                    <div class="product-info">
-                        <div class="product-category">Price Change</div>
-                        <h3 class="product-name">{{ entry.product.name if entry.product else 'Deleted Product' }}</h3>
-                        <p class="product-price">FCFA {{ "{:,.0f}".format(entry.price) }}</p>
-
-                        {% if entry.product %}
-                        <p class="product-description">
-                            <strong>Category:</strong> {{ entry.product.category.name if entry.product.category else
-                            'N/A' }}<br>
-                            <strong>Farmer:</strong> {{ entry.product.farmer.username if entry.product.farmer else
-                            'Unknown' }}
-                        </p>
-                        {% endif %}
-
-                        <p class="product-location">📅 {{ entry.changed_at.strftime('%Y-%m-%d %H:%M') if
-                            entry.changed_at else 'N/A' }}</p>
-
-                        <!-- Price Change Indicator -->
-                        {% if loop.index < price_history|length %} {% set next_entry=price_history[loop.index] %} {% if
-                            entry.product and next_entry.product and entry.product.id==next_entry.product.id %} {% set
-                            price_diff=entry.price - next_entry.price %} {% if price_diff> 0 %}
-                            <div
-                                style="background: rgba(220, 53, 69, 0.1); color: #dc3545; padding: 8px; border-radius: 6px; font-size: 0.8rem; margin-top: 10px;">
-                                📈 Increased by FCFA {{ "{:,.0f}".format(price_diff) }}
-                            </div>
-                            {% elif price_diff < 0 %} <div
-                                style="background: rgba(40, 167, 69, 0.1); color: #28a745; padding: 8px; border-radius: 6px; font-size: 0.8rem; margin-top: 10px;">
-                                📉 Decreased by FCFA {{ "{:,.0f}".format(-price_diff) }}
-                    </div>
-                    {% endif %}
-                    {% endif %}
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
+{% block content %}
+<!-- Price Tracking Content -->
+<section class="products-section">
+    <div class="container">
+        <div class="products-header">
+            <h2>Product Price Change History</h2>
+            <p class="subtitle">Monitor price changes across all products on the platform</p>
         </div>
 
-        <!-- Summary Statistics -->
-        <div class="products-header" style="margin-top: 40px;">
-            <h3>Price Change Summary</h3>
-        </div>
-        <div class="categories-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-            <div class="category-card">
-                <div class="category-img"
-                    style="background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                    {{ stats.total_changes }}
-                </div>
-                <p class="category-name">Total Price Changes</p>
-            </div>
-
-            <div class="category-card">
-                <div class="category-img"
-                    style="background: #28a745; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                    {{ stats.unique_products }}
-                </div>
-                <p class="category-name">Products with Changes</p>
-            </div>
-
-            <div class="category-card">
-                <div class="category-img"
-                    style="background: #ffc107; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                    FCFA {{ "{:,.0f}".format(stats.average_price) }}
-                </div>
-                <p class="category-name">Average Price</p>
-            </div>
-
-            <div class="category-card">
-                <div class="category-img"
-                    style="background: #dc3545; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                    FCFA {{ "{:,.0f}".format(stats.highest_price) }}
-                </div>
-                <p class="category-name">Highest Price</p>
-            </div>
-
-            <div class="category-card">
-                <div class="category-img"
-                    style="background: #6f42c1; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                    FCFA {{ "{:,.0f}".format(stats.lowest_price) }}
-                </div>
-                <p class="category-name">Lowest Price</p>
-            </div>
-        </div>
-
-        {% else %}
-        <div class="no-products">
-            <h3>No price changes recorded</h3>
-            <p>Price changes will appear here when farmers update their product prices.</p>
-            <a href="{{ url_for('admin.list_products') }}" class="cta-button" style="margin-top: 15px;">View
-                Products</a>
-        </div>
-        {% endif %}
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 AgriConnect Admin Panel. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script>
         {% if price_history %}
-        // Prepare data for the chart
-        const priceData = [
+        <!-- Price Chart Section -->
+        <div class="products-header" style="margin-top: 40px;">
+            <h3>Price Trends Over Time</h3>
+            <p class="subtitle">Visual representation of price changes across products</p>
+        </div>
+
+        <div
+            style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); margin-bottom: 40px; height: 400px;">
+            <canvas id="priceChart"></canvas>
+        </div>
+
+        <!-- Price History Cards -->
+        <div class="products-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
             {% for entry in price_history %}
-        {
-            date: '{{ entry.changed_at.strftime("%Y-%m-%d") if entry.changed_at else "N/A" }}',
-                time: '{{ entry.changed_at.strftime("%Y-%m-%d %H:%M") if entry.changed_at else "N/A" }}',
-                    price: { { entry.price } },
-            product: '{{ (entry.product.name[:20] if entry.product else "Deleted Product") | replace("'", "\\'") }}...',
-                category: '{{ (entry.product.category.name if entry.product and entry.product.category else "N/A") | replace("'", "\\'") }}'
-        } {% if not loop.last %}, {% endif %}
+            <div class="product-card" style="height: auto;">
+                <div class="product-placeholder"
+                    style="height: 80px; background: linear-gradient(135deg, #28a745, #20c997); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    📊
+                </div>
+                <div class="product-info">
+                    <div class="product-category">Price Change</div>
+                    <h3 class="product-name">{{ entry.product.name if entry.product else 'Deleted Product' }}</h3>
+                    <p class="product-price">FCFA {{ "{:,.0f}".format(entry.price) }}</p>
+
+                    {% if entry.product %}
+                    <p class="product-description">
+                        <strong>Category:</strong> {{ entry.product.category.name if entry.product.category else
+                        'N/A' }}<br>
+                        <strong>Farmer:</strong> {{ entry.product.farmer.username if entry.product.farmer else
+                        'Unknown' }}
+                    </p>
+                    {% endif %}
+
+                    <p class="product-location">📅 {{ entry.changed_at.strftime('%Y-%m-%d %H:%M') if
+                        entry.changed_at else 'N/A' }}</p>
+
+                    <!-- Price Change Indicator -->
+                    {% if loop.index < price_history|length %} {% set next_entry=price_history[loop.index] %} {% if
+                        entry.product and next_entry.product and entry.product.id==next_entry.product.id %} {% set
+                        price_diff=entry.price - next_entry.price %} {% if price_diff> 0 %}
+                        <div
+                            style="background: rgba(220, 53, 69, 0.1); color: #dc3545; padding: 8px; border-radius: 6px; font-size: 0.8rem; margin-top: 10px;">
+                            📈 Increased by FCFA {{ "{:,.0f}".format(price_diff) }}
+                        </div>
+                        {% elif price_diff < 0 %} <div
+                            style="background: rgba(40, 167, 69, 0.1); color: #28a745; padding: 8px; border-radius: 6px; font-size: 0.8rem; margin-top: 10px;">
+                            📉 Decreased by FCFA {{ "{:,.0f}".format(-price_diff) }}
+                </div>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
         {% endfor %}
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="products-header" style="margin-top: 40px;">
+        <h3>Price Change Summary</h3>
+    </div>
+    <div class="categories-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <div class="category-card">
+            <div class="category-img"
+                style="background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                {{ stats.total_changes }}
+            </div>
+            <p class="category-name">Total Price Changes</p>
+        </div>
+
+        <div class="category-card">
+            <div class="category-img"
+                style="background: #28a745; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                {{ stats.unique_products }}
+            </div>
+            <p class="category-name">Products with Changes</p>
+        </div>
+
+        <div class="category-card">
+            <div class="category-img"
+                style="background: #ffc107; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                FCFA {{ "{:,.0f}".format(stats.average_price) }}
+            </div>
+            <p class="category-name">Average Price</p>
+        </div>
+
+        <div class="category-card">
+            <div class="category-img"
+                style="background: #dc3545; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                FCFA {{ "{:,.0f}".format(stats.highest_price) }}
+            </div>
+            <p class="category-name">Highest Price</p>
+        </div>
+
+        <div class="category-card">
+            <div class="category-img"
+                style="background: #6f42c1; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                FCFA {{ "{:,.0f}".format(stats.lowest_price) }}
+            </div>
+            <p class="category-name">Lowest Price</p>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="no-products">
+        <h3>No price changes recorded</h3>
+        <p>Price changes will appear here when farmers update their product prices.</p>
+        <a href="{{ url_for('admin.list_products') }}" class="cta-button" style="margin-top: 15px;">View
+            Products</a>
+    </div>
+    {% endif %}
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <p>© 2025 AgriConnect Admin Panel. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    {% if price_history %}
+    // Prepare data for the chart
+    const priceData = [
+        {% for entry in price_history %}
+    {
+        date: '{{ entry.changed_at.strftime("%Y-%m-%d") if entry.changed_at else "N/A" }}',
+            time: '{{ entry.changed_at.strftime("%Y-%m-%d %H:%M") if entry.changed_at else "N/A" }}',
+                price: { { entry.price } },
+        product: '{{ (entry.product.name[:20] if entry.product else "Deleted Product") | replace("'", "\\'") }}...',
+            category: '{{ (entry.product.category.name if entry.product and entry.product.category else "N/A") | replace("'", "\\'") }}'
+    } {% if not loop.last %}, {% endif %}
+    {% endfor %}
         ];
 
-        // Sort data by date
-        priceData.sort((a, b) => new Date(a.time) - new Date(b.time));
+    // Sort data by date
+    priceData.sort((a, b) => new Date(a.time) - new Date(b.time));
 
-        // Create chart
-        const ctx = document.getElementById('priceChart').getContext('2d');
+    // Create chart
+    const ctx = document.getElementById('priceChart').getContext('2d');
 
-        // Generate colors for different products
-        const productColors = {};
-        const colors = ['#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c'];
-        let colorIndex = 0;
+    // Generate colors for different products
+    const productColors = {};
+    const colors = ['#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c'];
+    let colorIndex = 0;
 
-        priceData.forEach(item => {
-            if (!productColors[item.product]) {
-                productColors[item.product] = colors[colorIndex % colors.length];
-                colorIndex++;
+    priceData.forEach(item => {
+        if (!productColors[item.product]) {
+            productColors[item.product] = colors[colorIndex % colors.length];
+            colorIndex++;
+        }
+    });
+
+    // Create datasets for each product
+    const datasets = Object.keys(productColors).map(product => {
+        const productData = priceData.filter(item => item.product === product);
+        return {
+            label: product,
+            data: productData.map(item => ({
+                x: item.date,
+                y: item.price
+            })),
+            borderColor: productColors[product],
+            backgroundColor: productColors[product] + '20',
+            borderWidth: 2,
+            tension: 0.1,
+            fill: false,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        };
+    });
+
+    const priceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Product Price Changes Over Time',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    color: '#2d5c3b'
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    mode: 'point',
+                    intersect: false,
+                    callbacks: {
+                        title: function (context) {
+                            return context[0].raw.x + ' (Product: ' + context[0].dataset.label + ')';
+                        },
+                        label: function (context) {
+                            return `Price: FCFA ${context.parsed.y.toLocaleString()}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        parser: 'YYYY-MM-DD',
+                        tooltipFormat: 'MMM DD, YYYY',
+                        displayFormats: {
+                            day: 'MMM DD'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Date',
+                        font: {
+                            weight: 'bold'
+                        },
+                        color: '#2d5c3b'
+                    },
+                    grid: {
+                        color: '#f0f0f0'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Price (FCFA)',
+                        font: {
+                            weight: 'bold'
+                        },
+                        color: '#2d5c3b'
+                    },
+                    grid: {
+                        color: '#f0f0f0'
+                    },
+                    ticks: {
+                        callback: function (value) {
+                            return 'FCFA ' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
             }
-        });
+        }
+    });
 
-        // Create datasets for each product
-        const datasets = Object.keys(productColors).map(product => {
-            const productData = priceData.filter(item => item.product === product);
-            return {
-                label: product,
-                data: productData.map(item => ({
-                    x: item.date,
-                    y: item.price
-                })),
-                borderColor: productColors[product],
-                backgroundColor: productColors[product] + '20',
-                borderWidth: 2,
-                tension: 0.1,
-                fill: false,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            };
-        });
+    // Additional chart for price distribution by category
+    const categoryPrices = {};
+    priceData.forEach(item => {
+        if (!categoryPrices[item.category]) {
+            categoryPrices[item.category] = [];
+        }
+        categoryPrices[item.category].push(item.price);
+    });
 
-        const priceChart = new Chart(ctx, {
-            type: 'line',
+    const categoryAverages = Object.keys(categoryPrices).map(category => ({
+        category: category,
+        average: categoryPrices[category].reduce((a, b) => a + b, 0) / categoryPrices[category].length,
+        count: categoryPrices[category].length
+    }));
+
+    // Create a simple bar chart showing average prices by category
+    if (categoryAverages.length > 0) {
+        const chartContainer = document.createElement('div');
+        chartContainer.style.cssText = 'background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); margin-top: 30px;';
+        chartContainer.innerHTML = '<canvas id="categoryChart" width="400" height="200"></canvas>';
+
+        // Insert the chart before the products grid
+        const productsGrid = document.querySelector('.products-grid');
+        if (productsGrid) {
+            productsGrid.parentNode.insertBefore(chartContainer, productsGrid);
+        } else {
+            document.querySelector('.products-section .container').appendChild(chartContainer);
+        }
+
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'bar',
             data: {
-                datasets: datasets
+                labels: categoryAverages.map(item => item.category),
+                datasets: [{
+                    label: 'Average Price (FCFA)',
+                    data: categoryAverages.map(item => item.average),
+                    backgroundColor: colors.slice(0, categoryAverages.length).map(color => color + '80'),
+                    borderColor: colors.slice(0, categoryAverages.length),
+                    borderWidth: 2
+                }]
             },
             options: {
                 responsive: true,
@@ -227,7 +322,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Product Price Changes Over Time',
+                        text: 'Average Prices by Category',
                         font: {
                             size: 16,
                             weight: 'bold'
@@ -235,62 +330,39 @@
                         color: '#2d5c3b'
                     },
                     legend: {
-                        display: true,
-                        position: 'bottom',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: {
-                                size: 12
-                            }
-                        }
+                        display: false
                     },
                     tooltip: {
-                        mode: 'point',
-                        intersect: false,
                         callbacks: {
-                            title: function (context) {
-                                return context[0].raw.x + ' (Product: ' + context[0].dataset.label + ')';
-                            },
                             label: function (context) {
-                                return `Price: FCFA ${context.parsed.y.toLocaleString()}`;
+                                const category = categoryAverages[context.dataIndex];
+                                return [
+                                    `Average: FCFA ${context.parsed.y.toLocaleString()}`,
+                                    `Price changes: ${category.count}`
+                                ];
                             }
                         }
                     }
                 },
                 scales: {
                     x: {
-                        type: 'time',
-                        time: {
-                            parser: 'YYYY-MM-DD',
-                            tooltipFormat: 'MMM DD, YYYY',
-                            displayFormats: {
-                                day: 'MMM DD'
-                            }
-                        },
                         title: {
                             display: true,
-                            text: 'Date',
+                            text: 'Category',
                             font: {
                                 weight: 'bold'
                             },
                             color: '#2d5c3b'
-                        },
-                        grid: {
-                            color: '#f0f0f0'
                         }
                     },
                     y: {
                         title: {
                             display: true,
-                            text: 'Price (FCFA)',
+                            text: 'Average Price (FCFA)',
                             font: {
                                 weight: 'bold'
                             },
                             color: '#2d5c3b'
-                        },
-                        grid: {
-                            color: '#f0f0f0'
                         },
                         ticks: {
                             callback: function (value) {
@@ -298,119 +370,12 @@
                             }
                         }
                     }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
                 }
             }
         });
-
-        // Additional chart for price distribution by category
-        const categoryPrices = {};
-        priceData.forEach(item => {
-            if (!categoryPrices[item.category]) {
-                categoryPrices[item.category] = [];
-            }
-            categoryPrices[item.category].push(item.price);
-        });
-
-        const categoryAverages = Object.keys(categoryPrices).map(category => ({
-            category: category,
-            average: categoryPrices[category].reduce((a, b) => a + b, 0) / categoryPrices[category].length,
-            count: categoryPrices[category].length
-        }));
-
-        // Create a simple bar chart showing average prices by category
-        if (categoryAverages.length > 0) {
-            const chartContainer = document.createElement('div');
-            chartContainer.style.cssText = 'background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); margin-top: 30px;';
-            chartContainer.innerHTML = '<canvas id="categoryChart" width="400" height="200"></canvas>';
-
-            // Insert the chart before the products grid
-            const productsGrid = document.querySelector('.products-grid');
-            if (productsGrid) {
-                productsGrid.parentNode.insertBefore(chartContainer, productsGrid);
-            } else {
-                document.querySelector('.products-section .container').appendChild(chartContainer);
-            }
-
-            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-            new Chart(categoryCtx, {
-                type: 'bar',
-                data: {
-                    labels: categoryAverages.map(item => item.category),
-                    datasets: [{
-                        label: 'Average Price (FCFA)',
-                        data: categoryAverages.map(item => item.average),
-                        backgroundColor: colors.slice(0, categoryAverages.length).map(color => color + '80'),
-                        borderColor: colors.slice(0, categoryAverages.length),
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Average Prices by Category',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
-                            },
-                            color: '#2d5c3b'
-                        },
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    const category = categoryAverages[context.dataIndex];
-                                    return [
-                                        `Average: FCFA ${context.parsed.y.toLocaleString()}`,
-                                        `Price changes: ${category.count}`
-                                    ];
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Category',
-                                font: {
-                                    weight: 'bold'
-                                },
-                                color: '#2d5c3b'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Average Price (FCFA)',
-                                font: {
-                                    weight: 'bold'
-                                },
-                                color: '#2d5c3b'
-                            },
-                            ticks: {
-                                callback: function (value) {
-                                    return 'FCFA ' + value.toLocaleString();
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        {% else %}
-        console.log('No price history data available for charts');
-        {% endif %}
-    </script>
-</body>
-
-</html>
+    }
+    {% else %}
+    console.log('No price history data available for charts');
+    {% endif %}
+</script>
+{% endblock %}

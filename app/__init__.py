@@ -14,7 +14,7 @@ def create_app():
     # Initialize extensions
     initialize_extensions(app)
 
-    # Register blueprints
+    # Register views
     register_views(app)
 
     # 404 error handler

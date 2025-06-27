@@ -19,8 +19,7 @@ def create_admin_user():
     if not admin:
         email = input("Enter admin email: ")
         password = input("Enter admin password: ")
-        admin = User(email=email, role='admin', username='admin')
-        admin.set_password(password)
+        admin = User(email=email, role='admin', username='admin', password=password)
         db.session.add(admin)
         db.session.commit()
         print(f"Admin user created with email: {email}")

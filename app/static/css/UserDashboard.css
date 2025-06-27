@@ -193,6 +193,7 @@ body {
 .category-card {
     background: #fff;
     border-radius: 12px;
+    max-width: 300px;
     padding: 20px;
     text-align: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -223,6 +224,7 @@ body {
 .products-section {
     padding: 60px 0;
     background-color: #f9f9f9;
+    min-height: 85vh;
 }
 
 .products-section h2 {
@@ -314,6 +316,7 @@ body {
 .product-card {
     background: white;
     border-radius: 16px;
+    max-width: 300px;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
@@ -412,6 +415,24 @@ body {
     cursor: pointer;
     transition: background 0.3s;
     margin-top: auto;
+}
+
+.message-button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #007bff;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 5px;
+    font-size: 0.9rem;
+}
+
+.message-button:hover {
+    background: #0056b3;
 }
 
 /* No Products State */
@@ -729,32 +750,108 @@ table td {
     color: #b7e4c7 !important;
 }
 
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    position: relative;
+    z-index: 1001;
+}
+
+.hamburger {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: white;
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: white;
+    left: 0;
+    transition: transform 0.3s ease, top 0.3s ease;
+}
+
+.hamburger::before {
+    top: -8px;
+}
+
+.hamburger::after {
+    top: 8px;
+}
+
+.nav-toggle.is-active .hamburger {
+    transform: rotate(45deg);
+}
+
+.nav-toggle.is-active .hamburger::before {
+    top: 0;
+    transform: rotate(90deg);
+}
+
+.nav-toggle.is-active .hamburger::after {
+    top: 0;
+    transform: rotate(90deg);
+    opacity: 0;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .header .container {
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .nav-toggle {
+        display: block;
+    }
+
+    .nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(135deg, #2d5c3b, #4a8b5e);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
     }
 
-    .search-form {
-        flex-direction: column;
-        width: 100%;
-        align-items: stretch;
-        gap: 8px;
-    }
-
-    .search-form input[type="text"] {
-        width: 100%;
-    }
-
-    .search-form select {
-        width: 100%;
-        min-width: auto;
+    .nav.is-active {
+        display: flex;
     }
 
     .nav ul {
         flex-direction: column;
-        gap: 10px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav ul li {
+        width: 100%;
+    }
+
+    .nav-link {
+        display: block;
+        padding: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .search-form {
+        display: flex;
+        order: 3;
+        width: 100%;
+        margin-top: 10px;
     }
 
     .hero-content {
@@ -816,9 +913,7 @@ table td {
         justify-items: center;
     }
 
-    .product-card {
-        max-width: 200px;
-    }
+
 
     .modal-content {
         margin: 20% auto;
