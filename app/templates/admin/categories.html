@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Manage Categories{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Categories</h2>
+    <a href="{{ url_for('admin.add_category') }}" class="btn">Add Category</a>
+    <div class="admin-category-list">
+        <ul>
+            {% for category in categories if not category.parent_id %}
+            <li>
+                <span><strong>{{ category.name }}</strong></span>
+                <form method="post" action="{{ url_for('admin.delete_category', category_id=category.id) }}"
+                    style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" onclick="return confirm('Delete this category?')">Delete</button>
+                </form>
+                {% if category.subcategories %}
+                <ul>
+                    {% for sub in category.subcategories %}
+                    <li>
+                        <span>{{ sub.name }}</span>
+                        <form method="post" action="{{ url_for('admin.delete_category', category_id=sub.id) }}"
+                            style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" onclick="return confirm('Delete this subcategory?')">Delete</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Admin Dashboard</h2>
+    <div style="display:flex; flex-wrap:wrap; gap:2rem; justify-content:center; margin:2rem 0;">
+        <div
+            style="background:#f7f9fc; border-radius:10px; box-shadow:0 1px 8px rgba(102,126,234,0.06); padding:2rem 2.5rem; min-width:220px;">
+            <h3 style="margin-bottom:0.5rem;">Users</h3>
+            <p style="font-size:2rem; font-weight:700;">{{ user_count }}</p>
+            <a href="{{ url_for('admin.list_users') }}" class="btn">Manage Users</a>
+        </div>
+        <div
+            style="background:#f7f9fc; border-radius:10px; box-shadow:0 1px 8px rgba(102,126,234,0.06); padding:2rem 2.5rem; min-width:220px;">
+            <h3 style="margin-bottom:0.5rem;">Categories</h3>
+            <p style="font-size:2rem; font-weight:700;">{{ category_count }}</p>
+            <a href="{{ url_for('admin.list_categories') }}" class="btn">Manage Categories</a>
+        </div>
+        <div
+            style="background:#f7f9fc; border-radius:10px; box-shadow:0 1px 8px rgba(102,126,234,0.06); padding:2rem 2.5rem; min-width:220px;">
+            <h3 style="margin-bottom:0.5rem;">Products</h3>
+            <p style="font-size:2rem; font-weight:700;">{{ product_count }}</p>
+            <a href="#" class="btn" style="pointer-events:none;opacity:0.6;">View Products</a>
+        </div>
+        <div
+            style="background:#f7f9fc; border-radius:10px; box-shadow:0 1px 8px rgba(102,126,234,0.06); padding:2rem 2.5rem; min-width:220px;">
+            <h3 style="margin-bottom:0.5rem;">Price Tracking</h3>
+            <p style="font-size:2rem; font-weight:700;">&#128200;</p>
+            <a href="{{ url_for('admin.price_tracking') }}" class="btn">View Price Changes</a>
+        </div>
+    </div>
+    <div style="margin-top:2rem;">
+        <a href="{{ url_for('admin.list_users') }}" class="btn" style="margin-right:1rem;">Users</a>
+        <a href="{{ url_for('admin.list_categories') }}" class="btn" style="margin-right:1rem;">Categories</a>
+        <a href="{{ url_for('admin.price_tracking') }}" class="btn">Price Tracking</a>
+    </div>
+</div>
+{% endblock %}

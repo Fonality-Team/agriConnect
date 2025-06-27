@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Price Tracking{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Product Price Change History</h2>
+    <div class="admin-category-list">
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align:left;">Product ID</th>
+                    <th style="text-align:left;">Product Name</th>
+                    <th style="text-align:left;">New Price</th>
+                    <th style="text-align:left;">Changed At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in price_history %}
+                <tr>
+                    <td>{{ entry.product_id }}</td>
+                    <td>{{ entry.product.name if entry.product else 'N/A' }}</td>
+                    <td>{{ entry.price }}</td>
+                    <td>{{ entry.changed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if not price_history %}
+        <p>No price changes recorded.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -31,6 +31,8 @@ class Product(db.Model):
 
     # Relationship to category
     category = db.relationship('Category', backref='products', lazy=True)
+    # Relationship to images
+    images = db.relationship('ProductImage', backref='product', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Product {self.name}>'

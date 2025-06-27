@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from app.core.config import Config
 from app.extensions import initialize_extensions
 from app.views import register_views
@@ -16,4 +16,10 @@ def create_app():
 
     # Register blueprints
     register_views(app)
+
+    # 404 error handler
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
+
     return app

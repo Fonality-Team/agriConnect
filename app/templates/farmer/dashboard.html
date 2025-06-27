@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Farmer Dashboard{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Farmer Dashboard</h2>
+    <div style="margin:2rem 0;">
+        <a href="{{ url_for('farmer.list_products') }}" class="btn" style="margin-right:1rem;">My Products</a>
+        <a href="{{ url_for('farmer.create_product') }}" class="btn">Add Product</a>
+    </div>
+    <div style="margin-top:2rem;">
+        <p>Welcome, {{ current_user.username }}!</p>
+        <p>You have <strong>{{ product_count }}</strong> products listed.</p>
+    </div>
+</div>
+{% endblock %}

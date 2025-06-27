@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Users</h2>
+    <div class="admin-category-list">
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align:left;">ID</th>
+                    <th style="text-align:left;">Username</th>
+                    <th style="text-align:left;">Email</th>
+                    <th style="text-align:left;">Role</th>
+                    <th style="text-align:left;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                            style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" onclick="return confirm('Delete this user?')"
+                                style="background:#e53e3e;color:#fff;border:none;padding:0.3rem 0.7rem;border-radius:5px;">Delete</button>
+                        </form>
+                        {% if user.role != 'admin' %}
+                        <form method="post" action="{{ url_for('admin.promote_user', user_id=user.id) }}"
+                            style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" onclick="return confirm('Promote this user to admin?')"
+                                style="background:#667eea;color:#fff;border:none;padding:0.3rem 0.7rem;border-radius:5px;">Promote
+                                to Admin</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

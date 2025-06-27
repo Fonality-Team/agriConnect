@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Create Product{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Create Product</h2>
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+            <label>Name</label>
+            <input type="text" name="name" required>
+        </div>
+        <div>
+            <label>Description</label>
+            <textarea name="description"></textarea>
+        </div>
+        <div>
+            <label>Price</label>
+            <input type="number" name="price" step="0.01" required>
+        </div>
+        <div>
+            <label>Category</label>
+            <select name="category_id" required>
+                <option value="">Select Category</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Product Images</label>
+            <input type="file" name="images" multiple accept="image/*">
+            <small>You can upload multiple images.</small>
+        </div>
+        <button type="submit">Create</button>
+    </form>
+</div>
+{% endblock %}

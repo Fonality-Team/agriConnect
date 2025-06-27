@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}My Products{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>My Products</h2>
+    <a href="{{ url_for('farmer.create_product') }}" class="btn">Create New Product</a>
+    <ul style="margin-top:2rem;">
+        {% for product in products %}
+        <li style="margin-bottom:1.5rem; text-align:left;">
+            <strong>{{ product.name }}</strong> - {{ product.price }}<br>
+            {{ product.description }}<br>
+            Category: {{ product.category.name if product.category else 'N/A' }}<br>
+            {% if product.images %}
+            {% for img in product.images %}
+            <img src="{{ img.image_url }}" alt="{{ product.name }}" width="100" style="margin:0.2rem;">
+            {% endfor %}
+            {% endif %}
+            <a href="{{ url_for('farmer.edit_product', product_id=product.id) }}" class="btn"
+                style="margin-right:0.5rem;">Edit</a>
+            <form method="post" action="{{ url_for('farmer.delete_product', product_id=product.id) }}"
+                style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" onclick="return confirm('Delete this product?')"
+                    style="background:#e53e3e;color:#fff;border:none;padding:0.3rem 0.7rem;border-radius:5px;">Delete</button>
+            </form>
+        </li>
+        {% else %}
+        <li>No products found.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
