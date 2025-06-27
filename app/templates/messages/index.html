@@ -14,48 +14,85 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
+            background-color: #f5f7fa;
+            margin: 0;
+        }
+
+        /* Header */
+        .header {
+            background: rgb(40, 167, 69);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-container {
+            position: relative;
+            margin-left: 30px;
+        }
+
+        .search-input {
+            padding: 10px 40px 10px 20px;
+            border: none;
+            border-radius: 25px;
+            width: 300px;
+            background-color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fff;
+            background-image: url('/static/img/maleAvatar.jpg');
+            background-size: cover;
+            background-position: center;
         }
 
         .container {
             display: flex;
-            height: 100vh;
-            max-width: 1200px;
-            margin: 0 auto;
+            height: calc(100vh - 70px);
+            max-width: 100%;
+            margin: 0;
             background-color: white;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
 
         .sidebar {
-            width: 350px;
-            background-color: #2d5c3b;
-            color: white;
+            width: 280px;
+            background-color: #ffffff;
+            border-right: 1px solid #e1e8ed;
             display: flex;
             flex-direction: column;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            background-color: #1f3d27;
-            border-bottom: 1px solid #4a8b5e;
-        }
-
-        .sidebar-header h2 {
-            margin-bottom: 10px;
-        }
-
-        .new-message-btn {
-            background-color: #4a8b5e;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .new-message-btn:hover {
-            background-color: #5ba068;
         }
 
         .conversations {
@@ -65,27 +102,51 @@
 
         .conversation-item {
             padding: 15px 20px;
-            border-bottom: 1px solid #4a8b5e;
+            border-bottom: 1px solid #f0f0f0;
             cursor: pointer;
             transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .conversation-item:hover {
-            background-color: #4a8b5e;
+            background-color: #f8f9fa;
         }
 
         .conversation-item.active {
-            background-color: #4a8b5e;
+            background-color: #e3f2fd;
+        }
+
+        .user-avatar-small {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #ddd;
+            background-image: url('/static/img/maleAvatar.jpg');
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .conversation-info {
+            flex: 1;
+            min-width: 0;
         }
 
         .conversation-name {
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #333;
+            font-size: 14px;
         }
 
         .conversation-preview {
-            font-size: 12px;
-            opacity: 0.8;
+            font-size: 13px;
+            color: #666;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .chat-area {
@@ -94,49 +155,128 @@
             flex-direction: column;
         }
 
-        .chat-header {
+        /* Marketplace Section */
+        .marketplace-section {
+            background-color: #fff;
+            border-bottom: 1px solid #e1e8ed;
             padding: 20px;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
         }
 
-        .chat-header h3 {
-            color: #2d5c3b;
+        .marketplace-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .listing-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .listing-title {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .listing-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .rate-seller-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .rate-seller-btn:hover {
+            background-color: #218838;
+        }
+
+        .report-seller-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .report-seller-btn:hover {
+            background-color: #c82333;
         }
 
         .messages-container {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
-            background-color: #ffffff;
-        }
-
-        .message {
-            margin-bottom: 15px;
             display: flex;
+            background-color: #f8f9fa;
+
+            flex-direction: column;
+            gap: 15px;
         }
 
-        .message.own {
-            justify-content: flex-end;
+        .bot-message,
+        .user-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
         }
 
-        .message-content {
-            max-width: 70%;
+        .bot-message {
+            align-self: flex-start;
+        }
+
+        .user-message {
+            align-self: flex-end;
+        }
+
+        .message-bubble {
+            width: 300px;
             padding: 12px 16px;
             border-radius: 18px;
-            background-color: #e9ecef;
+            font-size: 14px;
+            line-height: 1.4;
             position: relative;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+
         }
 
-        .message.own .message-content {
-            background-color: #2d5c3b;
-            color: white;
+        .bot-message .message-bubble {
+            background-color: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 6px;
+
+        }
+
+        .user-message .message-bubble {
+            background-color: #d1fec5;
+            color: #333;
+            border-bottom-right-radius: 6px;
         }
 
         .message-time {
             font-size: 10px;
             opacity: 0.7;
             margin-top: 5px;
+            text-align: right;
+        }
+
+        .message-sender {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
         }
 
         .message-input-area {
@@ -268,23 +408,34 @@
 </head>
 
 <body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">AgriChat</div>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search messages...">
+                <button class="search-btn">Search</button>
+            </div>
+        </div>
+        <div class="user-avatar"></div>
+    </div>
+
     <div class="container">
         <!-- Sidebar with conversations -->
         <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>Messages</h2>
-                <button class="new-message-btn" onclick="openNewMessageModal()">+ New Message</button>
-            </div>
             <div class="conversations" id="conversations">
                 {% for conversation in conversations %}
                 <div class="conversation-item" data-user-id="{{ conversation.get_other_user(current_user.id).id }}">
-                    <div class="conversation-name">{{ conversation.get_other_user(current_user.id).username }}</div>
-                    <div class="conversation-preview">
-                        {% if conversation.last_message %}
-                        {{ conversation.last_message.content[:50] }}...
-                        {% else %}
-                        Start a conversation
-                        {% endif %}
+                    <div class="user-avatar-small"></div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">{{ conversation.get_other_user(current_user.id).username }}</div>
+                        <div class="conversation-preview">
+                            {% if conversation.last_message %}
+                            {{ conversation.last_message.content[:50] }}...
+                            {% else %}
+                            Hello, how are you?
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 {% else %}
@@ -297,15 +448,34 @@
 
         <!-- Chat area -->
         <div class="chat-area">
-            <div class="chat-header" id="chat-header" style="display: none;">
-                <h3 id="chat-with">Select a conversation</h3>
-            </div>
-            <div class="messages-container" id="messages-container">
-                <div class="welcome-message">
-                    Select a conversation to start messaging
+            <!-- Marketplace listing section -->
+            <div class="marketplace-section" id="marketplace-section" {% if not marketplace_product
+                %}style="display: none;" {% endif %}>
+                <div class="marketplace-header">
+                    <h3>Product Information</h3>
+                </div>
+                <div class="listing-content">
+                    <div class="listing-title" id="product-info">
+                        {% if marketplace_product %}
+                        FCFA {{ "{:,.0f}".format(marketplace_product.price) }} · {{ marketplace_product.name }}
+                        {% else %}
+                        Product information will appear here
+                        {% endif %}
+                    </div>
+                    <div class="listing-actions">
+                        <button class="rate-seller-btn">Rate seller</button>
+                        <button class="report-seller-btn">Report seller</button>
+                    </div>
                 </div>
             </div>
-            <div class="message-input-area" id="message-input-area" style="display: none;">
+
+            <!-- Messages area -->
+            <div class="messages-container" id="messages-container">
+                <div class="welcome-message">Select a conversation to start chatting</div>
+            </div>
+
+            <!-- Message input -->
+            <div class="message-input-area" id="message-input-area">
                 <div class="message-input">
                     <input type="text" id="message-input" placeholder="Type a message..."
                         onkeypress="handleKeyPress(event)">
@@ -320,7 +490,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Start New Conversation</h3>
-                <span class="close" onclick="closeNewMessageModal()">&times;</span>
+                <span class="close" onclick="closeNewMessageModal()">×</span>
             </div>
             <div class="user-list">
                 {% for user in users %}
@@ -340,6 +510,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
         let socket = io();
+        const currentUserId = {{ current_user.id }};
         let currentConversationId = null;
         let currentReceiverId = null;
 
@@ -379,8 +550,16 @@
                 conversationItem = document.createElement('div');
                 conversationItem.classList.add('conversation-item');
                 conversationItem.setAttribute('data-user-id', senderId);
+                conversationItem.innerHTML = `
+                    <div class="user-avatar-small"></div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">${senderUsername}</div>
+                        <div class="conversation-preview">New conversation</div>
+                    </div>
+                `;
                 // Add the click listener when creating
                 conversationItem.addEventListener('click', () => loadConversation(senderId, senderUsername));
+                conversationsContainer.appendChild(conversationItem);
             }
 
             // Update the conversation preview
@@ -394,9 +573,12 @@
             } else {
                 // Recreate the HTML if elements don't exist
                 conversationItem.innerHTML = `
-                    <div class="conversation-name">${senderUsername}</div>
-                    <div class="conversation-preview">
-                        ${data.content.substring(0, 50)}${data.content.length > 50 ? '...' : ''}
+                    <div class="user-avatar-small"></div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">${senderUsername}</div>
+                        <div class="conversation-preview">
+                            ${data.content.substring(0, 50)}${data.content.length > 50 ? '...' : ''}
+                        </div>
                     </div>
                 `;
                 // Re-add the click listener since we recreated the HTML
@@ -404,128 +586,7 @@
             }
 
             // Move the updated/new conversation to the top of the list
-            conversationsContainer.prepend(conversationItem);
-
-            // If the conversation that received a message is the active one,
-            // it should remain visually active.
-            if (senderId === currentReceiverId) {
-                // De-activate all others first
-                document.querySelectorAll('.conversation-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                // Activate the current one
-                conversationItem.classList.add('active');
-            }
-        });
-
-        // UI Functions
-        function openNewMessageModal() {
-            document.getElementById('newMessageModal').style.display = 'block';
-        }
-
-        function closeNewMessageModal() {
-            document.getElementById('newMessageModal').style.display = 'none';
-        }
-
-        function startConversation(userId, username) {
-            closeNewMessageModal();
-            loadConversation(userId, username);
-        }
-
-        function loadConversation(userId, username) {
-            console.log('Loading conversation with user ID:', userId, 'username:', username);
-            currentReceiverId = userId;
-            console.log('Set currentReceiverId to:', currentReceiverId);
-
-            // Update UI
-            document.getElementById('chat-header').style.display = 'block';
-            document.getElementById('message-input-area').style.display = 'block';
-            document.getElementById('chat-with').textContent = username;
-
-            // Mark conversation as active
-            document.querySelectorAll('.conversation-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`[data-user-id="${userId}"]`)?.classList.add('active');
-
-            // Load messages
-            fetch(`/messages/conversation/${userId}`)
-                .then(response => response.json())
-                .then(data => {
-                    currentConversationId = data.conversation_id;
-                    displayMessages(data.messages);
-                })
-                .catch(error => console.error('Error loading conversation:', error));
-        }
-
-        function displayMessages(messages) {
-            const container = document.getElementById('messages-container');
-            container.innerHTML = '';
-
-            messages.forEach(message => {
-                displayMessage(message.content, message.sender_username, message.created_at, message.is_own);
-            });
-
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function displayMessage(content, senderUsername, createdAt, isOwn) {
-            const container = document.getElementById('messages-container');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isOwn ? 'own' : ''}`;
-
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    ${content}
-                    <div class="message-time">${createdAt}</div>
-                </div>
-            `;
-
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('message-input');
-            const content = input.value.trim();
-
-            if (!content || !currentReceiverId) return;
-
-            fetch('/messages/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    receiver_id: currentReceiverId,
-                    content: content
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        displayMessage(data.message.content, data.message.sender_username, data.message.created_at, true);
-                        input.value = '';
-                    }
-                })
-                .catch(error => console.error('Error sending message:', error));
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
-        // Add click handlers for existing conversations
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.conversation-item').forEach(item => {
-                item.addEventListener('click', function () {
-                    const userId = this.dataset.userId;
-                    const username = this.querySelector('.conversation-name').textContent;
-                    loadConversation(userId, username);
-                });
-            });
+            conversationsContainer.insertBefore(conversationItem, conversationsContainer.firstChild);
         });
 
         // Close modal when clicking outside
@@ -535,6 +596,182 @@
                 modal.style.display = 'none';
             }
         }
+
+        // Handle key press in message input
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Send message function
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+
+            if (message && currentReceiverId) {
+                // Send via AJAX instead of socket for better conversation tracking
+                fetch('/messages/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        receiver_id: currentReceiverId,
+                        content: message,
+                        conversation_id: currentConversationId
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update conversation ID if returned
+                            if (data.conversation_id) {
+                                currentConversationId = data.conversation_id;
+                            }
+                            // Display message immediately
+                            displayMessage(message, 'You', new Date().toISOString(), true);
+                            messageInput.value = '';
+                        } else {
+                            console.error('Error sending message:', data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error sending message:', error);
+                    });
+            }
+        }
+
+        // Display message in chat
+        function displayMessage(content, senderName, timestamp, isOwn) {
+            const messagesContainer = document.getElementById('messages-container');
+
+            // Remove welcome message if present
+            const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isOwn ? 'user-message' : 'bot-message';
+
+            // Format timestamp
+            const date = new Date(timestamp);
+            const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-sender">${senderName}</div>
+                    ${content}
+                    <div class="message-time">${formattedTime}</div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Load conversation
+        function loadConversation(userId, username, productId = null) {
+            currentReceiverId = userId;
+            currentConversationId = null; // Reset conversation ID
+
+            // Update active conversation
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-user-id="${userId}"]`).classList.add('active');
+
+            // Clear messages
+            const messagesContainer = document.getElementById('messages-container');
+            messagesContainer.innerHTML = '';
+
+            // Build URL with product ID if provided
+            let url = `/messages/conversation/${userId}`;
+            if (productId) {
+                url += `?product_id=${productId}`;
+            }
+
+            // Load messages via AJAX
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.messages) {
+                        // Set conversation ID for future messages
+                        currentConversationId = data.conversation_id;
+
+                        data.messages.forEach(message => {
+                            const isOwn = message.sender_id == currentUserId;
+                            displayMessage(message.content, message.sender_username, message.created_at, isOwn);
+                        });
+                    }
+
+                    // Update marketplace section if product info is available
+                    if (data.product_id && data.product_name) {
+                        const marketplaceSection = document.getElementById('marketplace-section');
+                        const productInfo = document.getElementById('product-info');
+                        marketplaceSection.style.display = 'block';
+                        productInfo.textContent = `${data.product_name}`;
+                    }
+                })
+                .catch(error => console.error('Error loading conversation:', error));
+        }
+
+        // Open new message modal
+        function openNewMessageModal() {
+            document.getElementById('newMessageModal').style.display = 'block';
+        }
+
+        // Close new message modal
+        function closeNewMessageModal() {
+            document.getElementById('newMessageModal').style.display = 'none';
+        }
+
+        // Start conversation
+        function startConversation(userId, username) {
+            closeNewMessageModal();
+            loadConversation(userId, username);
+        }
+
+        // Initialize conversation click handlers
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if we're coming from a direct link (e.g., from marketplace)
+            const pathParts = window.location.pathname.split('/');
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (pathParts.length >= 4 && pathParts[1] === 'messages' && pathParts[2] === 'conversation') {
+                // Extract user ID from URL: /messages/conversation/{user_id}
+                const userId = pathParts[3];
+                const productId = urlParams.get('product_id');
+
+                if (userId) {
+                    // Find the username from conversations or users list
+                    const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
+                    let username = 'Unknown User';
+
+                    if (conversationItem) {
+                        username = conversationItem.querySelector('.conversation-name').textContent;
+                    } else {
+                        // Try to find in the users list (for new conversations)
+                        const userItem = document.querySelector(`[data-user-id="${userId}"]`);
+                        if (userItem) {
+                            username = userItem.textContent.trim();
+                        }
+                    }
+
+                    // Load the conversation automatically
+                    loadConversation(userId, username, productId);
+                }
+            }
+
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    const userId = this.dataset.userId;
+                    const username = this.querySelector('.conversation-name').textContent;
+                    loadConversation(userId, username);
+                });
+            });
+        });
     </script>
 </body>
 

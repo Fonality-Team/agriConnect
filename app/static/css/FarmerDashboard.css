@@ -493,6 +493,7 @@ textarea.form-input {
 .product-card {
     background: white;
     border-radius: 15px;
+    max-width: 300px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
     overflow: hidden;
     display: flex;

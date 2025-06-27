@@ -1,34 +1,6 @@
-{% extends 'base.html' %}
-{% block title %}Edit {{ product.name }} - AgriConnect{% endblock %}
-
-{% block head %}
-{{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/FarmerDashboard.css') }}" />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
-{% endblock %}
+{% extends "farmer/base.html" %}
 
 {% block content %}
-<!-- Header -->
-<header class="header">
-    <div class="container">
-        <div class="logo-container">
-            <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
-            <h1 class="brand-name">Edit Product</h1>
-        </div>
-        <button class="nav-toggle" aria-label="toggle navigation">
-            <span class="hamburger"></span>
-        </button>
-        <nav class="nav">
-            <ul>
-                <li><a href="{{ url_for('farmer.dashboard') }}" class="nav-link">Dashboard</a></li>
-                <li><a href="{{ url_for('farmer.list_products') }}" class="nav-link">My Products</a></li>
-                <li><a href="{{ url_for('main.index') }}" class="nav-link">Marketplace</a></li>
-                <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
-            </ul>
-        </nav>
-    </div>
-</header>
-
 <!-- Edit Product Form -->
 <section class="products-section">
     <div class="container">
@@ -132,12 +104,7 @@
     </div>
 </section>
 
-<!-- Footer -->
-<footer class="footer">
-    <div class="container">
-        <p>© 2025 AgriConnect Farmer Portal. All rights reserved.</p>
-    </div>
-</footer>
+
 <script>
     const navToggle = document.querySelector('.nav-toggle');
     const nav = document.querySelector('.nav');

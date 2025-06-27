@@ -1,183 +1,143 @@
-{% extends 'base.html' %}
-{% block title %}Manage Users{% endblock %}
+{% extends 'admin/base.html' %}
+
+
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/UserDashboard.css') }}" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
-    <title>Manage Users - AgriConnect Admin</title>
-</head>
-
-<body>
-    <!-- Admin Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo-container">
-                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
-                <h1 class="brand-name">User Management</h1>
-            </div>
-            <nav class="nav">
-                <ul>
-                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
-                    <li><a href="{{ url_for('admin.list_categories') }}" class="nav-link">Categories</a></li>
-                    <li><a href="{{ url_for('admin.list_products') }}" class="nav-link">Products</a></li>
-                    <li><a href="{{ url_for('admin.analytics') }}" class="nav-link">Analytics</a></li>
-                    <li><a href="{{ url_for('main.index') }}" class="nav-link">Main Site</a></li>
-                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
-                </ul>
-            </nav>
+<!-- Users Management -->
+<section class="products-section">
+    <div class="container">
+        <div class="products-header">
+            <h2>Users Management ({{ users|length }} total)</h2>
+            <p class="subtitle">Manage all platform users and their roles</p>
         </div>
-    </header>
 
-    <!-- Users Management -->
-    <section class="products-section">
-        <div class="container">
-            <div class="products-header">
-                <h2>Users Management ({{ users|length }} total)</h2>
-                <p class="subtitle">Manage all platform users and their roles</p>
-            </div>
-
-            <!-- Users Grid -->
-            <div class="products-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
-                {% for user in users %}
-                <div class="product-card" style="height: auto;">
-                    <div class="product-placeholder"
-                        style="height: 80px; background: linear-gradient(135deg, {% if user.role == 'admin' %}#dc3545, #e83e8c{% elif user.role == 'farmer' %}#28a745, #20c997{% else %}#667eea, #764ba2{% endif %}); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                        {% if user.role == 'admin' %}👑
-                        {% elif user.role == 'farmer' %}🧑‍🌾
-                        {% else %}👤{% endif %}
+        <!-- Users Grid -->
+        <div class="products-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+            {% for user in users %}
+            <div class="product-card" style="height: auto;">
+                <div class="product-placeholder"
+                    style="height: 80px; background: linear-gradient(135deg, {% if user.role == 'admin' %}#dc3545, #e83e8c{% elif user.role == 'farmer' %}#28a745, #20c997{% else %}#667eea, #764ba2{% endif %}); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    {% if user.role == 'admin' %}👑
+                    {% elif user.role == 'farmer' %}🧑‍🌾
+                    {% else %}👤{% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-category"
+                        style="background: {% if user.role == 'admin' %}rgba(220, 53, 69, 0.1); color: #dc3545{% elif user.role == 'farmer' %}rgba(40, 167, 69, 0.1); color: #28a745{% else %}rgba(102, 126, 234, 0.1); color: #667eea{% endif %};">
+                        {{ user.role|title }}
                     </div>
-                    <div class="product-info">
-                        <div class="product-category"
-                            style="background: {% if user.role == 'admin' %}rgba(220, 53, 69, 0.1); color: #dc3545{% elif user.role == 'farmer' %}rgba(40, 167, 69, 0.1); color: #28a745{% else %}rgba(102, 126, 234, 0.1); color: #667eea{% endif %};">
-                            {{ user.role|title }}
-                        </div>
-                        <h3 class="product-name">{{ user.username }}</h3>
-                        <p class="product-price" style="color: #667eea; margin-bottom: 8px;">{{ user.email }}</p>
+                    <h3 class="product-name">{{ user.username }}</h3>
+                    <p class="product-price" style="color: #667eea; margin-bottom: 8px;">{{ user.email }}</p>
 
-                        <!-- Contact Information -->
-                        {% if user.phone or user.whatsapp %}
-                        <div
-                            style="margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 6px;">
-                            <p style="font-size: 0.85rem; font-weight: 600; color: #495057; margin-bottom: 5px;">Contact
-                                Info:</p>
-                            {% if user.phone %}
-                            <p style="font-size: 0.8rem; color: #6c757d; margin: 2px 0;">
-                                📞 Phone: {{ user.phone }}
-                            </p>
-                            {% endif %}
-                            {% if user.whatsapp %}
-                            <p style="font-size: 0.8rem; color: #25d366; margin: 2px 0;">
-                                💬 WhatsApp: {{ user.whatsapp }}
-                            </p>
-                            {% endif %}
-                        </div>
-                        {% else %}
-                        <div
-                            style="margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.02); border-radius: 6px;">
-                            <p style="font-size: 0.8rem; color: #adb5bd; font-style: italic;">No contact info provided
-                            </p>
-                        </div>
+                    <!-- Contact Information -->
+                    {% if user.phone or user.whatsapp %}
+                    <div style="margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 6px;">
+                        <p style="font-size: 0.85rem; font-weight: 600; color: #495057; margin-bottom: 5px;">Contact
+                            Info:</p>
+                        {% if user.phone %}
+                        <p style="font-size: 0.8rem; color: #6c757d; margin: 2px 0;">
+                            📞 Phone: {{ user.phone }}
+                        </p>
+                        {% endif %}
+                        {% if user.whatsapp %}
+                        <p style="font-size: 0.8rem; color: #25d366; margin: 2px 0;">
+                            💬 WhatsApp: {{ user.whatsapp }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div style="margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.02); border-radius: 6px;">
+                        <p style="font-size: 0.8rem; color: #adb5bd; font-style: italic;">No contact info provided
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <p class="product-location">📅 Joined: {{ user.created_at.strftime('%Y-%m-%d') if
+                        user.created_at else 'N/A' }}</p>
+
+                    <!-- User Actions -->
+                    <div style="display: flex; gap: 5px; margin-top: 15px;">
+                        {% if user.role != 'admin' %}
+                        <form method="post" action="{{ url_for('admin.promote_user', user_id=user.id) }}"
+                            style="flex: 1;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" onclick="return confirm('Promote {{ user.username }} to admin?')"
+                                style="width: 100%; background: #667eea; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer; margin-bottom: 5px;">
+                                Promote to Admin
+                            </button>
+                        </form>
                         {% endif %}
 
-                        <p class="product-location">📅 Joined: {{ user.created_at.strftime('%Y-%m-%d') if
-                            user.created_at else 'N/A' }}</p>
-
-                        <!-- User Actions -->
-                        <div style="display: flex; gap: 5px; margin-top: 15px;">
-                            {% if user.role != 'admin' %}
-                            <form method="post" action="{{ url_for('admin.promote_user', user_id=user.id) }}"
-                                style="flex: 1;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="submit" onclick="return confirm('Promote {{ user.username }} to admin?')"
-                                    style="width: 100%; background: #667eea; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer; margin-bottom: 5px;">
-                                    Promote to Admin
-                                </button>
-                            </form>
-                            {% endif %}
-
-                            {% if user.role != 'admin' %}
-                            <form method="post" action="{{ url_for('admin.delete_user', user_id=user.id) }}"
-                                style="flex: 1;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="submit"
-                                    onclick="return confirm('Delete user {{ user.username }}? This action cannot be undone.')"
-                                    style="width: 100%; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer;">
-                                    Delete User
-                                </button>
-                            </form>
-                            {% else %}
-                            <div
-                                style="flex: 1; text-align: center; padding: 8px; background: #f8f9fa; border-radius: 6px; font-size: 0.8rem; color: #6c757d;">
-                                Protected Admin
-                            </div>
-                            {% endif %}
+                        {% if user.role != 'admin' %}
+                        <form method="post" action="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                            style="flex: 1;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit"
+                                onclick="return confirm('Delete user {{ user.username }}? This action cannot be undone.')"
+                                style="width: 100%; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer;">
+                                Delete User
+                            </button>
+                        </form>
+                        {% else %}
+                        <div
+                            style="flex: 1; text-align: center; padding: 8px; background: #f8f9fa; border-radius: 6px; font-size: 0.8rem; color: #6c757d;">
+                            Protected Admin
                         </div>
+                        {% endif %}
                     </div>
                 </div>
-                {% else %}
-                <div class="no-products">
-                    <h3>No users found</h3>
-                    <p>No users are registered in the system.</p>
-                </div>
-                {% endfor %}
             </div>
+            {% else %}
+            <div class="no-products">
+                <h3>No users found</h3>
+                <p>No users are registered in the system.</p>
+            </div>
+            {% endfor %}
+        </div>
 
-            <!-- User Statistics -->
-            <div class="products-header" style="margin-top: 40px;">
-                <h3>User Statistics</h3>
+        <!-- User Statistics -->
+        <div class="products-header" style="margin-top: 40px;">
+            <h3>User Statistics</h3>
+        </div>
+        <div class="categories-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="category-card">
+                <div class="category-img"
+                    style="background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    {{ users|selectattr('role', 'equalto', 'admin')|list|length }}
+                </div>
+                <p class="category-name">Administrators</p>
             </div>
-            <div class="categories-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                <div class="category-card">
-                    <div class="category-img"
-                        style="background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                        {{ users|selectattr('role', 'equalto', 'admin')|list|length }}
-                    </div>
-                    <p class="category-name">Administrators</p>
+            <div class="category-card">
+                <div class="category-img"
+                    style="background: #28a745; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    {{ users|selectattr('role', 'equalto', 'farmer')|list|length }}
                 </div>
-                <div class="category-card">
-                    <div class="category-img"
-                        style="background: #28a745; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                        {{ users|selectattr('role', 'equalto', 'farmer')|list|length }}
-                    </div>
-                    <p class="category-name">Farmers</p>
+                <p class="category-name">Farmers</p>
+            </div>
+            <div class="category-card">
+                <div class="category-img"
+                    style="background: #ffc107; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    {{ users|selectattr('role', 'equalto', 'user')|list|length }}
                 </div>
-                <div class="category-card">
-                    <div class="category-img"
-                        style="background: #ffc107; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                        {{ users|selectattr('role', 'equalto', 'user')|list|length }}
-                    </div>
-                    <p class="category-name">Regular Users</p>
+                <p class="category-name">Regular Users</p>
+            </div>
+            <div class="category-card">
+                <div class="category-img"
+                    style="background: #17a2b8; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    {{ users|selectattr('phone')|list|length }}
                 </div>
-                <div class="category-card">
-                    <div class="category-img"
-                        style="background: #17a2b8; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                        {{ users|selectattr('phone')|list|length }}
-                    </div>
-                    <p class="category-name">With Phone</p>
+                <p class="category-name">With Phone</p>
+            </div>
+            <div class="category-card">
+                <div class="category-img"
+                    style="background: #25d366; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    {{ users|selectattr('whatsapp')|list|length }}
                 </div>
-                <div class="category-card">
-                    <div class="category-img"
-                        style="background: #25d366; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                        {{ users|selectattr('whatsapp')|list|length }}
-                    </div>
-                    <p class="category-name">With WhatsApp</p>
-                </div>
+                <p class="category-name">With WhatsApp</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 AgriConnect Admin Panel. All rights reserved.</p>
-        </div>
-    </footer>
-</body>
 
-</html>
 {% endblock %}

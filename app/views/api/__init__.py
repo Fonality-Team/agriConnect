@@ -19,13 +19,16 @@ def get_farmer_contact(product_id):
 
         farmer = product.farmer
         return jsonify({
+            'farmer_id': farmer.id,
             'username': farmer.username,
             'phone': farmer.phone,
             'whatsapp': farmer.whatsapp
         })
     except Exception as e:
+        print(f"Error fetching farmer contact: {e}")
         return jsonify({
             'error': 'Failed to fetch contact information',
+            'farmer_id': None,
             'username': None,
             'phone': None,
             'whatsapp': None

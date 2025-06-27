@@ -1,123 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'admin/base.html' %}
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/UserDashboard.css') }}" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
-    <title>Manage Categories - AgriConnect Admin</title>
-</head>
 
-<style>
-    .nav-link {
-        color: black;
-    }
-</style>
+{% block content %}
 
-<body>
-    <!-- Admin Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo-container">
-                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
-                <h1 class="brand-name">Category Management</h1>
-            </div>
-            <nav class="nav">
-                <ul>
-                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Dashboard</a></li>
-                    <li><a href="{{ url_for('admin.list_users') }}" class="nav-link">Users</a></li>
-                    <li><a href="{{ url_for('admin.list_products') }}" class="nav-link">Products</a></li>
-                    <li><a href="{{ url_for('admin.analytics') }}" class="nav-link">Analytics</a></li>
-                    <li><a href="{{ url_for('main.index') }}" class="nav-link">Main Site</a></li>
-                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
-                </ul>
-            </nav>
+<!-- Categories Management -->
+<section class="products-section">
+    <div class="container">
+        <div class="products-header">
+            <h2>Categories Management</h2>
+            <a href="{{ url_for('admin.add_category') }}" class="cta-button">Add New Category</a>
         </div>
-    </header>
 
-    <!-- Categories Management -->
-    <section class="products-section">
-        <div class="container">
-            <div class="products-header">
-                <h2>Categories Management</h2>
-                <a href="{{ url_for('admin.add_category') }}" class="cta-button">Add New Category</a>
-            </div>
+        <!-- Categories Grid -->
+        <div class="categories-grid">
+            {% for category in categories if not category.parent_id %}
+            <div class="category-card" style="height: auto;">
+                {% if category.image %}
+                <img class="category-img" src="{{ category.image }}" alt="{{ category.name }}" />
+                {% else %}
+                <div class="category-img"
+                    style="background: linear-gradient(135deg, #28a745, #20c997); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    📂
+                </div>
+                {% endif %}
+                <div style="margin-top: 10px;">
+                    <p class="category-name">{{ category.name }}</p>
+                    {% if category.description %}
+                    <p style="font-size: 0.8rem; color: #666; margin: 5px 0;">{{ category.description[:60] }}{% if
+                        category.description|length > 60 %}...{% endif %}</p>
+                    {% endif %}
 
-            <!-- Categories Grid -->
-            <div class="categories-grid">
-                {% for category in categories if not category.parent_id %}
-                <div class="category-card" style="height: auto;">
-                    {% if category.image %}
-                    <img class="category-img" src="{{ category.image }}" alt="{{ category.name }}" />
-                    {% else %}
-                    <div class="category-img"
-                        style="background: linear-gradient(135deg, #28a745, #20c997); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                        📂
+                    <!-- Product count -->
+                    <p style="font-size: 0.75rem; color: #28a745; margin: 5px 0;">
+                        {{ category.products|length }} products
+                    </p>
+
+                    <!-- Category Actions -->
+                    <form method="post" action="{{ url_for('admin.delete_category', category_id=category.id) }}"
+                        style="margin-top: 10px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit"
+                            onclick="return confirm('Delete category {{ category.name }}? This will also delete all products in this category.')"
+                            style="width: 100%; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer;">
+                            Delete Category
+                        </button>
+                    </form>
+
+                    <!-- Subcategories -->
+                    {% if category.subcategories %}
+                    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <p style="font-size: 0.8rem; font-weight: 600; color: #495057; margin-bottom: 8px;">
+                            Subcategories:</p>
+                        {% for sub in category.subcategories %}
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 5px; background: white; border-radius: 4px;">
+                            <span style="font-size: 0.75rem;">{{ sub.name }}</span>
+                            <form method="post" action="{{ url_for('admin.delete_category', category_id=sub.id) }}"
+                                style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" onclick="return confirm('Delete subcategory {{ sub.name }}?')"
+                                    style="background: #dc3545; color: white; border: none; border-radius: 3px; padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">×</button>
+                            </form>
+                        </div>
+                        {% endfor %}
                     </div>
                     {% endif %}
-                    <div style="margin-top: 10px;">
-                        <p class="category-name">{{ category.name }}</p>
-                        {% if category.description %}
-                        <p style="font-size: 0.8rem; color: #666; margin: 5px 0;">{{ category.description[:60] }}{% if
-                            category.description|length > 60 %}...{% endif %}</p>
-                        {% endif %}
-
-                        <!-- Product count -->
-                        <p style="font-size: 0.75rem; color: #28a745; margin: 5px 0;">
-                            {{ category.products|length }} products
-                        </p>
-
-                        <!-- Category Actions -->
-                        <form method="post" action="{{ url_for('admin.delete_category', category_id=category.id) }}"
-                            style="margin-top: 10px;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <button type="submit"
-                                onclick="return confirm('Delete category {{ category.name }}? This will also delete all products in this category.')"
-                                style="width: 100%; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 8px; font-size: 0.8rem; cursor: pointer;">
-                                Delete Category
-                            </button>
-                        </form>
-
-                        <!-- Subcategories -->
-                        {% if category.subcategories %}
-                        <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                            <p style="font-size: 0.8rem; font-weight: 600; color: #495057; margin-bottom: 8px;">
-                                Subcategories:</p>
-                            {% for sub in category.subcategories %}
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 5px; background: white; border-radius: 4px;">
-                                <span style="font-size: 0.75rem;">{{ sub.name }}</span>
-                                <form method="post" action="{{ url_for('admin.delete_category', category_id=sub.id) }}"
-                                    style="display: inline;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                    <button type="submit" onclick="return confirm('Delete subcategory {{ sub.name }}?')"
-                                        style="background: #dc3545; color: white; border: none; border-radius: 3px; padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">×</button>
-                                </form>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
                 </div>
-                {% else %}
-                <div class="no-products">
-                    <h3>No categories found</h3>
-                    <p>Start by adding your first category.</p>
-                    <a href="{{ url_for('admin.add_category') }}" class="cta-button" style="margin-top: 15px;">Add
-                        Category</a>
-                </div>
-                {% endfor %}
             </div>
+            {% else %}
+            <div class="no-products">
+                <h3>No categories found</h3>
+                <p>Start by adding your first category.</p>
+                <a href="{{ url_for('admin.add_category') }}" class="cta-button" style="margin-top: 15px;">Add
+                    Category</a>
+            </div>
+            {% endfor %}
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 AgriConnect Admin Panel. All rights reserved.</p>
-        </div>
-    </footer>
-</body>
-
-</html>
+{% endblock %}

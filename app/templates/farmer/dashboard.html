@@ -1,38 +1,10 @@
-{% extends 'base.html' %}
-{% block title %}Farmer Dashboard - AgriConnect{% endblock %}
-
-{% block head %}
-{{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/FarmerDashboard.css') }}" />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-{% endblock %}
+{% extends "farmer/base.html" %}
 
 {% block content %}
-<!-- Header -->
-<header class="header">
-    <div class="container">
-        <div class="logo-container">
-            <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
-            <h1 class="brand-name">Farmer Dashboard</h1>
-        </div>
-        <button class="nav-toggle" aria-label="toggle navigation">
-            <span class="hamburger"></span>
-        </button>
-        <nav class="nav">
-            <ul>
-                <li><a href="{{ url_for('farmer.dashboard') }}" class="nav-link">Dashboard</a></li>
-                <li><a href="{{ url_for('farmer.list_products') }}" class="nav-link">My Products</a></li>
-                <li><a href="{{ url_for('farmer.create_product') }}" class="nav-link">Add Product</a></li>
-                <li><a href="{{ url_for('main.index') }}" class="nav-link">Marketplace</a></li>
-                <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
-            </ul>
-        </nav>
-    </div>
-</header>
-
 <!-- Dashboard Content -->
 <section class="dashboard-section">
     <div class="container">
+        <br>
         <!-- Welcome Banner -->
         <div class="welcome-banner">
             <h2>Welcome back, {{ current_user.username }}! 👋</h2>
@@ -134,12 +106,7 @@
     </div>
 </section>
 
-<!-- Footer -->
-<footer class="footer">
-    <div class="container">
-        <p>© 2025 AgriConnect Farmer Dashboard. Growing together, succeeding together.</p>
-    </div>
-</footer>
+
 
 <script>
     const navToggle = document.querySelector('.nav-toggle');
@@ -158,4 +125,6 @@
         });
     });
 </script>
+
+
 {% endblock %}

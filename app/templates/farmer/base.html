@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/FarmerDashboard.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+
+
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-container">
+                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
+                <h1 class="brand-name">Farmer Dashboard</h1>
+            </div>
+            <button class="nav-toggle" aria-label="toggle navigation">
+                <span class="hamburger"></span>
+            </button>
+            <nav class="nav">
+                <ul>
+                    <li><a href="{{ url_for('farmer.dashboard') }}" class="nav-link">Dashboard</a></li>
+                    <li><a href="{{ url_for('farmer.list_products') }}" class="nav-link">My Products</a></li>
+                    <li><a href="{{ url_for('farmer.create_product') }}" class="nav-link">Add Product</a></li>
+                    <li><a href="{{ url_for('main.index') }}" class="nav-link">Marketplace</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        {% endblock %}
+
+
+    </main>
+
+
+</body>
+
+</html>

@@ -31,6 +31,7 @@
                     <li><a href="#categories" class="nav-link">Categories</a></li>
                     <li><a href="#products" class="nav-link">Products</a></li>
                     {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('message.index') }}" class="nav-link">Messages</a></li>
                     {% if current_user.role == 'admin' %}
                     <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin</a></li>
                     {% elif current_user.role == 'farmer' %}
@@ -122,9 +123,18 @@
                             100 %}...{% endif %}</p>
                         <p class="product-location">📍 {{ product.farmer.username if product.farmer else 'Unknown' }}
                         </p>
-                        <button class="contact-button"
-                            onclick="contactSeller({{ product.id }}, '{{ product.name }}', '{{ product.farmer.email if product.farmer else 'N/A' }}')"
+                        <button class="contact-button" data-product-id="{{ product.id }}"
+                            data-product-name="{{ product.name }}"
+                            data-farmer-email="{{ product.farmer.email if product.farmer else 'N/A' }}"
+                            onclick="contactSeller(this.dataset.productId, this.dataset.productName, this.dataset.farmerEmail)"
                             aria-label="Contact seller for {{ product.name }}">Contact Seller</button>
+                        {% if current_user.is_authenticated and current_user.id != product.farmer_id %}
+                        <button class="message-button" data-farmer-id="{{ product.farmer_id }}"
+                            data-product-id="{{ product.id }}" data-product-name="{{ product.name }}"
+                            data-farmer-username="{{ product.farmer.username if product.farmer else 'Unknown' }}"
+                            onclick="messageFarmer(this.dataset.farmerId, this.dataset.productId, this.dataset.productName, this.dataset.farmerUsername)"
+                            aria-label="Message farmer for {{ product.name }}">💬 Message Farmer</button>
+                        {% endif %}
                     </div>
                 </div>
                 {% else %}
@@ -194,6 +204,26 @@
     </footer>
 
     <script>
+        // Message farmer from modal
+        function messageFarmerFromModal(farmerId, productId, productName, farmerUsername) {
+            // Close the modal first
+            const modal = document.getElementById('contactModal');
+            modal.style.display = 'none';
+
+            // Redirect to messages page with product context
+            if (farmerId) {
+                window.location.href = `/messages/conversation/${farmerId}?product_id=${productId}`;
+            } else {
+                console.error('Farmer ID not available');
+            }
+        }
+
+        // Message farmer functionality
+        function messageFarmer(farmerId, productId, productName, farmerUsername) {
+            // Redirect to messages page with product context
+            window.location.href = `/messages/conversation/${farmerId}?product_id=${productId}`;
+        }
+
         // Contact seller functionality
         function contactSeller(productId, productName, farmerEmail) {
             const modal = document.getElementById('contactModal');
@@ -234,6 +264,11 @@
                                style="display: inline-block; text-decoration: none; text-align: center; flex: 1; min-width: 120px;">
                                📧 Send Email
                             </a>
+                            <button onclick="messageFarmerFromModal(${data.farmer_id || 'null'}, ${productId}, '${productName}', '${data.username || 'Unknown'}')"
+                               class="contact-button"
+                               style="display: inline-block; text-decoration: none; text-align: center; flex: 1; min-width: 120px; background: #007bff; border: none; cursor: pointer;">
+                               💬 Message Farmer
+                            </button>
                     `;
 
                     if (data.phone) {
@@ -270,12 +305,17 @@
                             <p style="margin-bottom: 10px;"><strong>Email:</strong> ${farmerEmail}</p>
                             <p style="color: #6c757d; font-style: italic;">Additional contact info not available</p>
                         </div>
-                        <div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <a href="mailto:${farmerEmail}?subject=Inquiry about ${productName}"
                                class="contact-button"
-                               style="display: inline-block; text-decoration: none; text-align: center; width: 100%;">
+                               style="display: inline-block; text-decoration: none; text-align: center; flex: 1; min-width: 120px;">
                                📧 Send Email
                             </a>
+                            <button onclick="messageFarmerFromModal(null, ${productId}, '${productName}', 'Unknown')"
+                               class="contact-button"
+                               style="display: inline-block; text-decoration: none; text-align: center; flex: 1; min-width: 120px; background: #007bff; border: none; cursor: pointer;">
+                               💬 Message Farmer
+                            </button>
                         </div>
                     `;
                 });

@@ -48,28 +48,55 @@ def conversation(user_id):
     Get or create a conversation with a specific user.
     """
     other_user = User.query.get_or_404(user_id)
+    product_id = request.args.get('product_id')
 
-    # Find existing conversation
-    conversation = Conversation.query.filter(
-        ((Conversation.user1_id == current_user.id) & (Conversation.user2_id == user_id)) |
-        ((Conversation.user1_id == user_id) & (Conversation.user2_id == current_user.id))
-    ).first()
+    # Find existing conversation for this product
+    conversation = None
+    if product_id:
+        conversation = Conversation.query.filter(
+            ((Conversation.user1_id == current_user.id) & (Conversation.user2_id == user_id)) |
+            ((Conversation.user1_id == user_id) & (Conversation.user2_id == current_user.id)),
+            Conversation.product_id == product_id
+        ).first()
+    else:
+        # Find any conversation with this user
+        conversation = Conversation.query.filter(
+            ((Conversation.user1_id == current_user.id) & (Conversation.user2_id == user_id)) |
+            ((Conversation.user1_id == user_id) & (Conversation.user2_id == current_user.id))
+        ).first()
 
     # Create new conversation if none exists
     if not conversation:
-        conversation = Conversation(
-            user1_id=min(current_user.id, user_id),
-            user2_id=max(current_user.id, user_id)
-        )
-        db.session.add(conversation)
-        db.session.commit()
+        # For product-specific conversations, always create one
+        if product_id:
+            from app.models.product import Product
+            product = Product.query.get(product_id)
+            if product:
+                conversation = Conversation(
+                    user1_id=min(current_user.id, user_id),
+                    user2_id=max(current_user.id, user_id),
+                    product_id=product_id
+                )
+                db.session.add(conversation)
+                db.session.commit()
+        else:
+            # For general conversations (not product-specific)
+            conversation = Conversation(
+                user1_id=min(current_user.id, user_id),
+                user2_id=max(current_user.id, user_id)
+            )
+            db.session.add(conversation)
+            db.session.commit()
+
+    if not conversation:
+        return jsonify({'error': 'Conversation not found'}), 404
 
     # Get messages for this conversation
     messages = conversation.get_messages()
 
     # Mark messages as read
     Message.query.filter(
-        Message.sender_id == user_id,
+        Message.conversation_id == conversation.id,
         Message.receiver_id == current_user.id,
         Message.is_read == False
     ).update({'is_read': True})
@@ -77,6 +104,8 @@ def conversation(user_id):
 
     return jsonify({
         'conversation_id': conversation.id,
+        'product_id': conversation.product_id,
+        'product_name': conversation.product.name if conversation.product else None,
         'other_user': {
             'id': other_user.id,
             'username': other_user.username
@@ -108,8 +137,9 @@ def send_message():
 
         receiver_id = data.get('receiver_id')
         content = data.get('content')
+        conversation_id = data.get('conversation_id')
 
-        print(f"DEBUG: receiver_id={receiver_id}, content='{content}'")
+        print(f"DEBUG: receiver_id={receiver_id}, content='{content}', conversation_id={conversation_id}")
 
         if not receiver_id or not content:
             print(f"ERROR: Missing fields. receiver_id: {receiver_id}, content: {content}")
@@ -123,31 +153,43 @@ def send_message():
     if not receiver:
         return jsonify({'error': 'Recipient not found'}), 404
 
+    # Find the conversation
+    conversation = None
+    if conversation_id:
+        conversation = Conversation.query.get(conversation_id)
+        # Verify user is part of this conversation
+        if conversation and conversation.user1_id != current_user.id and conversation.user2_id != current_user.id:
+            return jsonify({'error': 'Unauthorized access to conversation'}), 403
+
+    # If no conversation found by ID, try to find by users
+    if not conversation:
+        conversation = Conversation.query.filter(
+            ((Conversation.user1_id == current_user.id) & (Conversation.user2_id == receiver_id)) |
+            ((Conversation.user1_id == receiver_id) & (Conversation.user2_id == current_user.id))
+        ).first()
+
+    # Create conversation if it doesn't exist
+    if not conversation:
+        conversation = Conversation(
+            user1_id=min(current_user.id, receiver_id),
+            user2_id=max(current_user.id, receiver_id)
+        )
+        db.session.add(conversation)
+        db.session.flush()  # Get the conversation ID
+
     # Create the message
     message = Message(
         sender_id=current_user.id,
         receiver_id=receiver_id,
-        content=content.strip()
+        content=content.strip(),
+        conversation_id=conversation.id
     )
     db.session.add(message)
     db.session.flush()  # Get the message ID
 
-    # Update or create conversation
-    conversation = Conversation.query.filter(
-        ((Conversation.user1_id == current_user.id) & (Conversation.user2_id == receiver_id)) |
-        ((Conversation.user1_id == receiver_id) & (Conversation.user2_id == current_user.id))
-    ).first()
-
-    if not conversation:
-        conversation = Conversation(
-            user1_id=min(current_user.id, receiver_id),
-            user2_id=max(current_user.id, receiver_id),
-            last_message_id=message.id
-        )
-        db.session.add(conversation)
-    else:
-        conversation.last_message_id = message.id
-        conversation.updated_at = datetime.now()
+    # Update conversation
+    conversation.last_message_id = message.id
+    conversation.updated_at = datetime.now()
 
     db.session.commit()
 
@@ -164,6 +206,7 @@ def send_message():
 
     return jsonify({
         'success': True,
+        'conversation_id': conversation.id,
         'message': {
             'id': message.id,
             'content': message.content,

@@ -1,150 +1,114 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "farmer/base.html" %}
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/FarmerDashboard.css') }}" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
-    <title>My Products - AgriConnect</title>
-</head>
+{% block content %}
 
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo-container">
-                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
-                <h1 class="brand-name">My Products</h1>
-            </div>
-            <button class="nav-toggle" aria-label="toggle navigation">
-                <span class="hamburger"></span>
-            </button>
-            <nav class="nav">
-                <ul>
-                    <li><a href="{{ url_for('farmer.dashboard') }}" class="nav-link">Dashboard</a></li>
-                    <li><a href="{{ url_for('farmer.list_products') }}" class="nav-link active">My Products</a></li>
-                    <li><a href="{{ url_for('main.index') }}" class="nav-link">Marketplace</a></li>
-                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
-                </ul>
-            </nav>
+
+<!-- Products List Section -->
+<section class="products-section">
+    <div class="container">
+        <div class="page-header">
+            <h2 class="page-title">Manage Your Products</h2>
+            <a href="{{ url_for('farmer.create_product') }}" class="cta-button">Add New Product</a>
         </div>
-    </header>
 
-    <!-- Products List Section -->
-    <section class="products-section">
-        <div class="container">
-            <div class="page-header">
-                <h2 class="page-title">Manage Your Products</h2>
-                <a href="{{ url_for('farmer.create_product') }}" class="cta-button">Add New Product</a>
-            </div>
+        <!-- Filter and Search Bar -->
+        <div class="filter-bar">
+            <form method="GET" action="{{ url_for('farmer.list_products') }}" class="filter-form">
+                <input type="text" name="q" placeholder="Search by name..." value="{{ current_search or '' }}"
+                    class="form-input">
+                <select name="category" class="form-input">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.name }}" {% if current_category==category.name %}selected{% endif %}>
+                        {{ category.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-primary">Filter</button>
+            </form>
+        </div>
 
-            <!-- Filter and Search Bar -->
-            <div class="filter-bar">
-                <form method="GET" action="{{ url_for('farmer.list_products') }}" class="filter-form">
-                    <input type="text" name="q" placeholder="Search by name..." value="{{ current_search or '' }}"
-                        class="form-input">
-                    <select name="category" class="form-input">
-                        <option value="">All Categories</option>
-                        {% for category in categories %}
-                        <option value="{{ category.name }}" {% if current_category==category.name %}selected{% endif %}>
-                            {{ category.name }}</option>
-                        {% endfor %}
-                    </select>
-                    <button type="submit" class="btn-primary">Filter</button>
-                </form>
-            </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-            {% endif %}
-            {% endwith %}
-
-            <!-- Products Grid -->
-            <div class="products-grid">
-                {% for product in products %}
-                <div class="product-card">
-                    <img src="{{ product.images[0].image_url if product.images else url_for('static', filename='img/placeholder.png') }}"
-                        alt="{{ product.name }}" class="product-image">
-                    <div class="product-info">
-                        <div class="product-category">{{ product.category.name }}</div>
-                        <h3 class="product-name">{{ product.name }}</h3>
-                        <p class="product-price">FCFA {{ "{:,.0f}".format(product.price) }}</p>
-                        <p class="product-quantity">{{ product.quantity }} {{ product.unit }} available</p>
-                        <div class="action-buttons">
-                            <a href="{{ url_for('farmer.edit_product', product_id=product.id) }}"
-                                class="btn-edit">Edit</a>
-                            <form method="POST" action="{{ url_for('farmer.delete_product', product_id=product.id) }}"
-                                class="delete-form"
-                                onsubmit="return confirm('Are you sure you want to delete this product?');">
-                                {{ delete_form.hidden_tag() }}
-                                <button type="submit" class="btn-delete">Delete</button>
-                            </form>
-                        </div>
+        <!-- Products Grid -->
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <img src="{{ product.images[0].image_url if product.images else url_for('static', filename='img/placeholder.png') }}"
+                    alt="{{ product.name }}" class="product-image">
+                <div class="product-info">
+                    <div class="product-category">{{ product.category.name }}</div>
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-price">FCFA {{ "{:,.0f}".format(product.price) }}</p>
+                    <p class="product-quantity">{{ product.quantity }} {{ product.unit }} available</p>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('farmer.edit_product', product_id=product.id) }}" class="btn-edit">Edit</a>
+                        <form method="POST" action="{{ url_for('farmer.delete_product', product_id=product.id) }}"
+                            class="delete-form"
+                            onsubmit="return confirm('Are you sure you want to delete this product?');">
+                            {{ delete_form.hidden_tag() }}
+                            <button type="submit" class="btn-delete">Delete</button>
+                        </form>
                     </div>
                 </div>
-                {% else %}
-                <div class="no-results">
-                    <h3>You have not added any products yet.</h3>
-                    <a href="{{ url_for('farmer.create_product') }}" class="cta-button" style="margin-top: 15px;">Add
-                        Your First Product</a>
-                </div>
-                {% endfor %}
             </div>
+            {% else %}
+            <div class="no-results">
+                <h3>You have not added any products yet.</h3>
+                <a href="{{ url_for('farmer.create_product') }}" class="cta-button" style="margin-top: 15px;">Add
+                    Your First Product</a>
+            </div>
+            {% endfor %}
+        </div>
 
-            <!-- Pagination -->
-            {% if pagination and pagination.pages > 1 %}
-            <div class="pagination">
-                {% if pagination.has_prev %}<a
-                    href="{{ url_for('farmer.list_products', page=pagination.prev_num, q=current_search, category=current_category) }}">«
-                    Prev</a>{% endif %}
-                {% for page_num in pagination.iter_pages() %}
-                {% if page_num %}
-                {% if page_num != pagination.page %}
-                <a
-                    href="{{ url_for('farmer.list_products', page=page_num, q=current_search, category=current_category) }}">{{
-                    page_num }}</a>
-                {% else %}
-                <span class="current">{{ page_num }}</span>
-                {% endif %}
-                {% else %}
-                <span class="ellipsis">…</span>
-                {% endif %}
-                {% endfor %}
-                {% if pagination.has_next %}<a
-                    href="{{ url_for('farmer.list_products', page=pagination.next_num, q=current_search, category=current_category) }}">Next
-                    »</a>{% endif %}
-            </div>
+        <!-- Pagination -->
+        {% if pagination and pagination.pages > 1 %}
+        <div class="pagination">
+            {% if pagination.has_prev %}<a
+                href="{{ url_for('farmer.list_products', page=pagination.prev_num, q=current_search, category=current_category) }}">«
+                Prev</a>{% endif %}
+            {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+            {% if page_num != pagination.page %}
+            <a href="{{ url_for('farmer.list_products', page=page_num, q=current_search, category=current_category) }}">{{
+                page_num }}</a>
+            {% else %}
+            <span class="current">{{ page_num }}</span>
             {% endif %}
+            {% else %}
+            <span class="ellipsis">…</span>
+            {% endif %}
+            {% endfor %}
+            {% if pagination.has_next %}<a
+                href="{{ url_for('farmer.list_products', page=pagination.next_num, q=current_search, category=current_category) }}">Next
+                »</a>{% endif %}
         </div>
-    </section>
+        {% endif %}
+    </div>
+</section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 AgriConnect Farmer Portal. All rights reserved.</p>
-        </div>
-    </footer>
-    <script>
-        const navToggle = document.querySelector('.nav-toggle');
-        const nav = document.querySelector('.nav');
-        const navLinks = document.querySelectorAll('.nav-link');
 
-        navToggle.addEventListener('click', () => {
-            nav.classList.toggle('is-active');
-            navToggle.classList.toggle('is-active');
+<script>
+    const navToggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.nav');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    navToggle.addEventListener('click', () => {
+        nav.classList.toggle('is-active');
+        navToggle.classList.toggle('is-active');
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            nav.classList.remove('is-active');
+            navToggle.classList.remove('is-active');
         });
+    });
+</script>
 
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                nav.classList.remove('is-active');
-                navToggle.classList.remove('is-active');
-            });
-        });
-    </script>
-</body>
-
-</html>
+{% endblock %}
