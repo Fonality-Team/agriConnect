@@ -3,6 +3,7 @@ from .product import Product, ProductImage
 from .location import Location
 from .contact import Contact
 from .kyc import KYC
+from .message import Message, Conversation
 
 
 __all__ = [
@@ -11,5 +12,7 @@ __all__ = [
     'ProductImage',
     'Location',
     'Contact',
-    'KYC'
+    'KYC',
+    'Message',
+    'Conversation'
 ]

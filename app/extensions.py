@@ -4,10 +4,13 @@ from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from flask_wtf.csrf import CSRFProtect
 from typing import Optional
+from flask_socketio import SocketIO
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
+socketio = SocketIO(cors_allowed_origins='*') # Initialize SocketIO with CORS support
+csrf = CSRFProtect()
 
 
 def initialize_extensions(app: Flask):
@@ -17,7 +20,10 @@ def initialize_extensions(app: Flask):
     login_manager.login_view = 'auth.login'  # Redirect to the login page if not authenticated
     login_manager.login_message = 'Please log in to access this page.'  # Custom message for unauthenticated users
     login_manager.session_protection = 'strong'  # Use strong session protection
-    csrf = CSRFProtect(app)  # Initialize CSRF protection
+      # Initialize CSRF protection
+    # csrf.init_app(app)  # Initialize CSRF protection with the Flask app
+    socketio.init_app(app)  # Initialize SocketIO with the Flask app
+
 
     from app.models.user import User
     @login_manager.user_loader
