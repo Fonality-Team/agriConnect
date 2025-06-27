@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <h2>Add Category</h2>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div>
             <label>Name</label>
@@ -20,7 +20,12 @@
                 {% for cat in categories %}
                 <option value="{{ cat.id }}">{{ cat.name }}</option>
                 {% endfor %}
-            </select>
+            </select>1
+        </div>
+        <div>
+            <label>Product Images</label>
+            <input type="file" name="image" accept="image/*">
+            <small>You can upload image.</small>
         </div>
         <button type="submit">Add Category</button>
     </form>

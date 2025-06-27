@@ -1,61 +1,235 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block title %}AgriConnect - Coming Soon{% endblock %}
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/UserDashboard.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+    <title>AgriConnect</title>
+</head>
 
-{% block content %}
-<div class="container">
-    <!-- Logo/Icon -->
-    <div class="logo">
-        <!-- market svg -->
-
-
-    </div>
-
-    <!-- Main heading -->
-    <h1 class="title">AgriConnect</h1>
-
-    <!-- Subtitle -->
-    <p class="subtitle">
-        Connecting farmers, suppliers, and buyers in one platform
-    </p>
-
-    <!-- Description -->
-    <p class="description">
-        We're building something amazing for the agricultural community.
-        Our platform will revolutionize how farmers connect with suppliers
-        and buyers, making agricultural trade more accessible and efficient.
-    </p>
-
-    <!-- Progress indicator -->
-    <div class="progress-container">
-        <div class="progress-label">Development Progress</div>
-        <div class="progress-bar">
-            <div class="progress-fill"></div>
+<body>
+    <!-- Header with Navigation and Search -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-container">
+                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
+                <h1 class="brand-name">AgriConnect</h1>
+            </div>
+            <form method="get" class="search-form">
+                <input type="text" name="q" placeholder="Search products..." value="{{ request.args.get('q', '') }}"
+                    aria-label="Search products" />
+                <button type="submit" class="search-button">Search</button>
+            </form>
+            <nav class="nav">
+                <ul>
+                    <li><a href="#home" class="nav-link">Home</a></li>
+                    <li><a href="#categories" class="nav-link">Categories</a></li>
+                    <li><a href="#products" class="nav-link">Products</a></li>
+                    <li><a href="#contact" class="nav-link">Contact</a></li>
+                </ul>
+            </nav>
         </div>
-        <div class="progress-text">75% Complete - Launching Soon!</div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h1>Welcome to AgriConnect</h1>
+                <p class="subtitle">Your one-stop solution for all agricultural needs.</p>
+                <p>Connect with farmers, suppliers, and experts to grow your agricultural journey.</p>
+                <a href="#products" class="cta-button">Explore Products</a>
+            </div>
+            <div class="hero-image">
+                <img src="{{ url_for('static', filename='img/woman.png') }}" alt="Woman with fruits" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section id="categories" class="categories">
+        <div class="container">
+            <h2>Featured Categories</h2>
+            <div class="categories-grid">
+                {% for category in categories %}
+                <a href="{{ url_for('main.index', category=category.name) }}" class="category-card" role="button"
+                    tabindex="0" aria-label="View {{ category.name }} category">
+                    <img class="category-img" src="{{ category.image }}" alt="{{ category.name }}" />
+                    <p class="category-name">{{ category.name }}</p>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="products-section">
+        <div class="container">
+            <div class="products-header">
+                <h2>Products ({{ total_products }} found)</h2>
+                {% if current_search or (current_category and current_category != 'All') %}
+                <div class="active-filters">
+                    {% if current_search %}
+                    <span class="filter-tag">Search: "{{ current_search }}" <a
+                            href="{{ url_for('main.index') }}">×</a></span>
+                    {% endif %}
+                    {% if current_category and current_category != 'All' %}
+                    <span class="filter-tag">Category: {{ current_category }} <a
+                            href="{{ url_for('main.index', q=current_search) }}">×</a></span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="filter-buttons">
+                <a href="{{ url_for('main.index', q=current_search, sort=current_sort, order=current_order) }}"
+                    class="filter-button {% if not current_category or current_category == 'All' %}active{% endif %}">All</a>
+                {% for category in categories %}
+                <a href="{{ url_for('main.index', category=category.name, q=current_search, sort=current_sort, order=current_order) }}"
+                    class="filter-button {% if current_category == category.name %}active{% endif %}">{{ category.name
+                    }}</a>
+                {% endfor %}
+            </div>
+
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card" role="article" aria-label="{{ product.name }}">
+                    {% if product.images %}
+                    <img src="{{ product.images[0].image_url }}" alt="{{ product.name }}" loading="lazy" />
+                    {% else %}
+                    <div class="product-placeholder">No Image</div>
+                    {% endif %}
+                    <div class="product-info">
+                        <div class="product-category">{{ product.category.name if product.category else 'N/A' }}</div>
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <p class="product-price">FCFA {{ "{:,.0f}".format(product.price) }}</p>
+                        <p class="product-description">{{ product.description[:100] }}{% if product.description|length >
+                            100 %}...{% endif %}</p>
+                        <p class="product-location">📍 {{ product.farmer.username if product.farmer else 'Unknown' }}
+                        </p>
+                        <button class="contact-button"
+                            onclick="contactSeller({{ product.id }}, '{{ product.name }}', '{{ product.farmer.email if product.farmer else 'N/A' }}')"
+                            aria-label="Contact seller for {{ product.name }}">Contact Seller</button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-products">
+                    <h3>No products found</h3>
+                    <p>Try adjusting your search or filter criteria.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+            <div class="pagination">
+                {% if pagination.has_prev %}
+                <a href="{{ url_for('main.index', page=pagination.prev_num, q=current_search, category=current_category, sort=current_sort, order=current_order) }}"
+                    aria-label="Previous page">‹ Previous</a>
+                {% else %}
+                <span class="disabled">‹ Previous</span>
+                {% endif %}
+
+                {% for page_num in pagination.iter_pages() %}
+                {% if page_num %}
+                {% if page_num != pagination.page %}
+                <a
+                    href="{{ url_for('main.index', page=page_num, q=current_search, category=current_category, sort=current_sort, order=current_order) }}">{{
+                    page_num }}</a>
+                {% else %}
+                <span class="current">{{ page_num }}</span>
+                {% endif %}
+                {% else %}
+                <span>…</span>
+                {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <a href="{{ url_for('main.index', page=pagination.next_num, q=current_search, category=current_category, sort=current_sort, order=current_order) }}"
+                    aria-label="Next page">Next ›</a>
+                {% else %}
+                <span class="disabled">Next ›</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Contact Seller Modal -->
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Contact Seller</h3>
+            <div id="contactInfo">
+                <p>Loading seller information...</p>
+            </div>
+        </div>
     </div>
 
-    <!-- Coming soon message -->
-    <p class="subtitle">
-        <strong>Coming Soon!</strong> We're putting the finishing touches on something special.
-    </p>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AgriConnect. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#privacy">Privacy Policy</a>
+                <a href="#terms">Terms of Service</a>
+                <a href="#contact">Contact Us</a>
+            </div>
+        </div>
+    </footer>
 
-    <!-- Social links -->
-    <div class="social-links">
-        <a href="#" class="social-link" title="Follow us on Facebook">
-            <i class="fab fa-facebook-f"></i>
-        </a>
-        <a href="#" class="social-link" title="Follow us on Twitter">
-            <i class="fab fa-twitter"></i>
-        </a>
-        <a href="#" class="social-link" title="Follow us on Instagram">
-            <i class="fab fa-instagram"></i>
-        </a>
-        <a href="#" class="social-link" title="Connect on LinkedIn">
-            <i class="fab fa-linkedin-in"></i>
-        </a>
-    </div>
+    <script>
+        // Contact seller functionality
+        function contactSeller(productId, productName, farmerEmail) {
+            const modal = document.getElementById('contactModal');
+            const contactInfo = document.getElementById('contactInfo');
 
+            modal.style.display = 'block';
+            contactInfo.innerHTML = '<div class="loading"></div><p>Loading seller information...</p>';
 
-</div>
-{% endblock %}
+            setTimeout(() => {
+                contactInfo.innerHTML = `
+                    <p><strong>Product:</strong> ${productName}</p>
+                    <p><strong>Contact:</strong> ${farmerEmail}</p>
+                    <p><strong>Phone:</strong> Available upon request</p>
+                    <p>Please contact the seller directly for more information about this product.</p>
+                    <div style="margin-top: 20px;">
+                        <a href="mailto:${farmerEmail}?subject=Inquiry about ${productName}" class="contact-button" style="display: inline-block; text-decoration: none; text-align: center;">Send Email</a>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // Modal functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('contactModal');
+            const closeBtn = document.querySelector('.close');
+
+            closeBtn.onclick = function () {
+                modal.style.display = 'none';
+            }
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            // Auto-submit search form on sort/order change
+            const sortSelects = document.querySelectorAll('.search-form select');
+            sortSelects.forEach(select => {
+                select.addEventListener('change', function () {
+                    this.closest('form').submit();
+                });
+            });
+
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('.nav-link[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if
+    

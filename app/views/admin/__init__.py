@@ -4,7 +4,10 @@ from app.models.product import Category
 from app.models.user import User
 from app.models.product import Product
 from app.models.price_and_delivery import PriceHistory
+from app.services.upload_service import LocalFileUpload
 from app.extensions import db
+from sqlalchemy import func
+from datetime import datetime, timedelta
 
 admin_bp = Blueprint('admin', __name__, template_folder='../templates/admin')
 
@@ -45,13 +48,23 @@ def add_category():
     if request.method == 'POST':
         name = request.form.get('name')
         description = request.form.get('description')
+        image = request.files.get('image')
+
+
+        if image:
+            upload_service = LocalFileUpload()
+            try:
+                image_url = upload_service.upload_file(image, 'categories')
+            except Exception as e:
+                flash(f'Image upload failed: {e}', 'danger')
+                return render_template('admin/add_category.html', categories=categories)
         parent_id = request.form.get('parent_id') or None
         if not name:
             flash('Category name is required.', 'danger')
             return render_template('admin/add_category.html', categories=categories)
         if parent_id == '':
             parent_id = None
-        category = Category(name=name, description=description, parent_id=parent_id)
+        category = Category(name=name, description=description, parent_id=parent_id, image=image_url if image else None)
         db.session.add(category)
         try:
             db.session.commit()
@@ -132,3 +145,12 @@ def promote_user(user_id):
 def price_tracking():
     price_history = PriceHistory.query.order_by(PriceHistory.changed_at.desc()).all()
     return render_template('admin/price_tracking.html', price_history=price_history)
+
+@admin_bp.route('/products')
+@login_required
+@admin_required
+def list_products():
+    search_query = request.args.get('q', '').strip()
+    category_filter = request.args.get('category', '')
+    page = request.args.get('page', 1, type=int)
+    per

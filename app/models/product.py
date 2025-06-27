@@ -9,6 +9,7 @@ class Category(db.Model):
     description = db.Column(db.Text, nullable=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
+    image = db.Column(db.String(255), nullable=True)  # Path or URL to the category image
 
     # Self-referential relationship for subcategories
     parent = db.relationship('Category', remote_side=[id], backref='subcategories', lazy=True)

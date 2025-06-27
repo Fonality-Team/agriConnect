@@ -5,6 +5,7 @@ from app.models.product_image import ProductImage
 from app.extensions import db
 from app.services.upload_service import LocalFileUpload
 from app.models.price_and_delivery import PriceHistory
+from sqlalchemy import or_
 
 farmer_bp = Blueprint('farmer', __name__, template_folder='../templates/farmer')
 
@@ -57,8 +58,34 @@ def create_product():
 @farmer_bp.route('/products')
 @login_required
 def list_products():
-    products = Product.query.filter_by(farmer_id=current_user.id).all()
-    return render_template('farmer/list_products.html', products=products)
+    # Add search and filter for farmer's own products
+    search_query = request.args.get('q', '').strip()
+    category_filter = request.args.get('category', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    products_query = Product.query.filter_by(farmer_id=current_user.id)
+
+    if search_query:
+        products_query = products_query.filter(
+            Product.name.ilike(f"%{search_query}%")
+        )
+
+    if category_filter:
+        products_query = products_query.join(Category).filter(Category.name == category_filter)
+
+    products_pagination = products_query.paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    categories = Category.query.all()
+
+    return render_template('farmer/list_products.html',
+                         products=products_pagination.items,
+                         pagination=products_pagination,
+                         categories=categories,
+                         current_search=search_query,
+                         current_category=category_filter)
 
 @farmer_bp.route('/dashboard')
 @login_required
