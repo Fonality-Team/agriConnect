@@ -80,7 +80,6 @@ def add_category():
 @login_required
 @admin_required
 def delete_category(category_id):
-    from flask_wtf.csrf import validate_csrf
 
     category = Category.query.get_or_404(category_id)
     db.session.delete(category)
@@ -99,13 +98,7 @@ def list_users():
 @login_required
 @admin_required
 def delete_user(user_id):
-    from flask_wtf.csrf import validate_csrf
-    csrf_token = request.form.get('csrf_token')
-    try:
-        validate_csrf(csrf_token)
-    except Exception:
-        flash('Invalid CSRF token.', 'danger')
-        return redirect(url_for('admin.list_users'))
+
     user = User.query.get_or_404(user_id)
     if user.role == 'admin':
         flash('Cannot delete admin user.', 'danger')
@@ -119,14 +112,8 @@ def delete_user(user_id):
 @login_required
 @admin_required
 def promote_user(user_id):
-    from flask_wtf.csrf import validate_csrf
-    csrf_token = request.form.get('csrf_token')
-    try:
-        validate_csrf(csrf_token)
-    except Exception:
-        flash('Invalid CSRF token.', 'danger')
-        return redirect(url_for('admin.list_users'))
     user = User.query.get_or_404(user_id)
+
     if user.role == 'admin':
         flash('User is already an admin.', 'info')
     else:
@@ -201,12 +188,7 @@ def list_products():
 @admin_required
 def delete_product(product_id):
     from flask_wtf.csrf import validate_csrf
-    csrf_token = request.form.get('csrf_token')
-    try:
-        validate_csrf(csrf_token)
-    except Exception:
-        flash('Invalid CSRF token.', 'danger')
-        return redirect(url_for('admin.list_products'))
+
     product = Product.query.get_or_404(product_id)
     db.session.delete(product)
     db.session.commit()

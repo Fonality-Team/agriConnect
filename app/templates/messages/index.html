@@ -653,50 +653,6 @@
             console.log('Connected to server');
         });
 
-        socket.on('new_message', function (data) {
-            console.log('New message received:', data);
-            const senderId = parseInt(data.sender_id);
-            const currentReceiverIdInt = parseInt(currentReceiverId);
-            const senderUsername = data.sender_username || 'Unknown User';
-
-            // If the conversation with the sender is active, display the message
-            if (senderId === currentReceiverIdInt && currentReceiverIdInt !== null) {
-                displayMessage(data.content, senderUsername, data.created_at, false);
-            }
-
-            const conversationsContainer = document.getElementById('conversations');
-            let conversationItem = document.querySelector(`.conversation-item[data-user-id="${senderId}"]`);
-
-            // If no conversation item exists, create one
-            if (!conversationItem) {
-                const noConvMsg = conversationsContainer.querySelector('div[style*="text-align: center"]');
-                if (noConvMsg) {
-                    noConvMsg.remove();
-                }
-
-                conversationItem = document.createElement('div');
-                conversationItem.classList.add('conversation-item');
-                conversationItem.setAttribute('data-user-id', senderId);
-                conversationItem.innerHTML = `
-                <div class="user-avatar-small"></div>
-                <div class="conversation-info">
-                    <div class="conversation-name">${senderUsername}</div>
-                    <div class="conversation-preview">${data.content.substring(0, 50)}${data.content.length > 50 ? '...' : ''}</div>
-                </div>
-            `;
-                conversationItem.addEventListener('click', () => loadConversation(senderId, senderUsername));
-                conversationsContainer.appendChild(conversationItem);
-            } else {
-                // Update existing conversation preview
-                const previewDiv = conversationItem.querySelector('.conversation-preview');
-                if (previewDiv) {
-                    previewDiv.textContent = data.content.substring(0, 50) + (data.content.length > 50 ? '...' : '');
-                }
-                // Move to top
-                conversationsContainer.insertBefore(conversationItem, conversationsContainer.firstChild);
-            }
-        });
-
         // Close modal when clicking outside
         window.onclick = function (event) {
             const modal = document.getElementById('newMessageModal');
@@ -772,79 +728,80 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        // Load conversation
-        function loadConversation(userId, username, productId = null) {
-            currentReceiverId = parseInt(userId);
-            currentConversationId = null;
+        // // Load conversation
+        // function loadConversation(userId, username, productId = null) {
+        //     currentReceiverId = parseInt(userId);
+        //     currentConversationId = null;
 
-            // Update active conversation
-            document.querySelectorAll('.conversation-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
-            if (conversationItem) {
-                conversationItem.classList.add('active');
-            }
+        //     // Update active conversation
+        //     document.querySelectorAll('.conversation-item').forEach(item => {
+        //         item.classList.remove('active');
+        //     });
+        //     const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
+        //     if (conversationItem) {
+        //         conversationItem.classList.add('active');
+        //     }
 
-            // Clear messages
-            const messagesContainer = document.getElementById('messages-container');
-            messagesContainer.innerHTML = '';
+        //     // Clear messages
+        //     const messagesContainer = document.getElementById('messages-container');
+        //     messagesContainer.innerHTML = '';
 
-            // Build URL
-            let url = `/messages/conversation/${userId}`;
-            if (productId) {
-                url += `?product_id=${productId}`;
-            }
+        //     // Build URL
+        //     let url = `/messages/conversation/${userId}`;
+        //     if (productId) {
+        //         url += `?product_id=${productId}`;
+        //     }
 
-            // Load messages via AJAX
-            fetch(url, {
-                headers: {
-                    'Accept': 'application/json' // Explicitly request JSON
-                }
-            })
-                .then(response => {
-                    // Check if response is JSON
-                    const contentType = response.headers.get('content-type');
-                    if (!contentType || !contentType.includes('application/json')) {
-                        throw new Error('Server returned non-JSON response');
-                    }
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success && data.messages) {
-                        currentConversationId = data.conversation_id;
-                        data.messages.forEach(message => {
-                            const isOwn = message.sender_id == currentUserId;
-                            displayMessage(message.content, message.sender_username || username, message.created_at, isOwn);
-                        });
+        //     // Load messages via AJAX
+        //     fetch(url, {
+        //         headers: {
+        //             'Accept': 'application/json' // Explicitly request JSON
+        //         }
+        //     })
+        //         .then(response => {
+        //             // Check if response is JSON
+        //             const contentType = response.headers.get('content-type');
+        //             if (!contentType || !contentType.includes('application/json')) {
+        //                 throw new Error('Server returned non-JSON response');
+        //             }
+        //             if (!response.ok) {
+        //                 throw new Error(`HTTP error! Status: ${response.status}`);
+        //             }
+        //             return response.json();
+        //         })
+        //         .then(data => {
+        //             if (data.success && data.messages) {
+        //                 currentConversationId = data.conversation_id;
+        //                 data.messages.forEach(message => {
+        //                     const isOwn = message.sender_id == currentUserId;
+        //                     displayMessage(message.content, message.sender_username || username, message.created_at, isOwn);
+        //                 });
 
-                        // Update marketplace section
-                        const marketplaceSection = document.getElementById('marketplace-section');
-                        const productInfo = document.getElementById('product-info');
-                        if (data.product_id && data.product_name && data.product_price) {
-                            marketplaceSection.style.display = 'block';
-                            productInfo.textContent = `FCFA ${data.product_price.toLocaleString()} · ${data.product_name}`;
-                        } else {
-                            marketplaceSection.style.display = 'none';
-                        }
-                    } else {
-                        messagesContainer.innerHTML = '<div class="welcome-message">No messages yet. Start the conversation!</div>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading conversation:', error);
-                    messagesContainer.innerHTML = `
-                <div class="welcome-message" style="color: #dc3545;">
-                    Failed to load conversation. ${error.message === 'Server returned non-JSON response' ?
-                            'The server returned an unexpected response. Please try again or contact support.' :
-                            'Please check your connection or try again later.'}
-                </div>`;
-                });
-        }
-        // Open new message modal
+        //                 // Update marketplace section
+        //                 const marketplaceSection = document.getElementById('marketplace-section');
+        //                 const productInfo = document.getElementById('product-info');
+        //                 if (data.product_id && data.product_name && data.product_price) {
+        //                     marketplaceSection.style.display = 'block';
+        //                     productInfo.textContent = `FCFA ${data.product_price.toLocaleString()} · ${data.product_name}`;
+        //                 } else {
+        //                     marketplaceSection.style.display = 'none';
+        //                 }
+        //             } else {
+        //                 messagesContainer.innerHTML = '<div class="welcome-message">No messages yet. Start the conversation!</div>';
+        //             }
+        //         })
+        //         .catch(error => {
+        //             console.error('Error loading conversation:', error);
+        //             messagesContainer.innerHTML = `
+        //         <div class="welcome-message" style="color: #dc3545;">
+        //             Failed to load conversation. ${error.message === 'Server returned non-JSON response' ?
+        //                     'The server returned an unexpected response. Please try again or contact support.' :
+        //                     'Please check your connection or try again later.'}
+        //         </div>`;
+        //         });
+        // }
+        // // Open new message modal
+
         function openNewMessageModal() {
             document.getElementById('newMessageModal').style.display = 'block';
         }
@@ -1220,6 +1177,7 @@
                 </div>`;
                 });
         }
+
     </script>
 </body>
 

@@ -15,11 +15,6 @@ def index():
     """
     Render the index page for the message module.
     """
-    conversations = Conversation.query.filter(
-        (Conversation.user1_id == current_user.id) |
-        (Conversation.user2_id == current_user.id)
-    ).order_by(Conversation.updated_at.desc()).all()
-
     users = User.query.filter(User.id != current_user.id).all()
 
     marketplace_product = None
@@ -27,6 +22,50 @@ def index():
     if product_id:
         from app.models.product import Product
         marketplace_product = Product.query.get(product_id)
+
+        farmer = marketplace_product.farmer if marketplace_product else None
+
+        # start a conversation if the product is specified
+        message = "Am intrested in this product"
+        receiver_id = marketplace_product.farmer.id if farmer else None
+        sender_id = current_user.id
+
+        # check if the users have exisiting conversation
+        conversation_query = Conversation.query.filter(
+            ((Conversation.user1_id == current_user.id) & (Conversation.user2_id == receiver_id)) |
+            ((Conversation.user1_id == receiver_id) & (Conversation.user2_id == current_user.id))
+        )
+        if marketplace_product:
+            conversation_query = conversation_query.filter(Conversation.product_id == marketplace_product.id)
+
+        conversation_id = conversation_query.first()
+
+        if receiver_id and not conversation_id:
+            conversation = Conversation(
+                user1_id=min(current_user.id, receiver_id),
+                user2_id=max(current_user.id, receiver_id),
+                product_id=marketplace_product.id if marketplace_product else None
+            )
+            db.session.add(conversation)
+            db.session.flush()
+
+            # Create message
+            message = Message(
+                sender_id=current_user.id,
+                receiver_id=receiver_id,
+                content=message,
+                conversation_id=conversation.id
+            )
+            db.session.add(message)
+            conversation.last_message_id = message.id
+            conversation.updated_at = datetime.now()
+            db.session.commit()
+
+    conversations = Conversation.query.filter(
+    (Conversation.user1_id == current_user.id) |
+    (Conversation.user2_id == current_user.id)
+    ).order_by(Conversation.updated_at.desc()).all()
+
 
     return render_template('messages/index.html',
                          title='Messages',
