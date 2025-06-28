@@ -132,7 +132,7 @@
                         <p class="product-price">FCFA {{ "{:,.0f}".format(product.price) }}</p>
                         <p class="product-description">{{ product.description[:100] }}{% if product.description|length >
                             100 %}...{% endif %}</p>
-                        <p class="product-location">📍 {{ product.farmer.username if product.farmer else 'Unknown' }}
+                        <p class="product-location">📍 {{ product.location if product.location else 'Unknown' }}
                         </p>
                         <button class="contact-button" data-product-id="{{ product.id }}"
                             data-product-name="{{ product.name }}"
@@ -232,7 +232,7 @@
         // Message farmer functionality
         function messageFarmer(farmerId, productId, productName, farmerUsername) {
             // Redirect to messages page with product context
-            window.location.href = `/messages/conversation/${farmerId}?product_id=${productId}`;
+            window.location.href = `/messages/?product_id=${productId}`;
         }
 
         // Contact seller functionality
