@@ -1,0 +1,346 @@
+{% extends "farmer/base.html" %}
+{% block content %}
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f4f7f6;
+        color: #333;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .header {
+        background: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .header .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .logo {
+        height: 45px;
+        margin-right: 15px;
+    }
+
+    .brand-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c5530;
+    }
+
+    .nav ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        gap: 20px;
+    }
+
+    .nav-link {
+        text-decoration: none;
+        color: #555;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        color: #4caf50;
+    }
+
+    .nav-toggle {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 10px;
+        position: relative;
+        z-index: 1001;
+    }
+
+    .hamburger {
+        display: block;
+        width: 25px;
+        height: 3px;
+        background: #333;
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+
+    .hamburger::before,
+    .hamburger::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 3px;
+        background: #333;
+        left: 0;
+        transition: transform 0.3s ease, top 0.3s ease;
+    }
+
+    .hamburger::before {
+        top: -8px;
+    }
+
+    .hamburger::after {
+        top: 8px;
+    }
+
+    .nav-toggle.is-active .hamburger {
+        transform: rotate(45deg);
+    }
+
+    .nav-toggle.is-active .hamburger::before {
+        top: 0;
+        transform: rotate(90deg);
+    }
+
+    .nav-toggle.is-active .hamburger::after {
+        top: 0;
+        transform: rotate(90deg);
+        opacity: 0;
+    }
+
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-title {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #2c5530;
+        font-size: 2rem;
+        font-weight: 600;
+    }
+
+    .product-form {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #2c5530;
+        font-size: 0.9rem;
+    }
+
+    .form-input,
+    select.form-input {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s ease;
+        background-color: #f9f9f9;
+    }
+
+    .form-input:focus {
+        border-color: #4caf50;
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+        outline: none;
+        background-color: white;
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+
+    .alert-error,
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+
+    .error-message {
+        color: #e74c3c;
+        font-size: 0.85em;
+        margin-top: 5px;
+    }
+
+    .cta-button {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(76, 175, 80, 0.2);
+    }
+
+    .image-preview {
+        margin-top: 15px;
+        max-width: 300px;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+
+    .image-preview img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+
+    .document-icon {
+        font-size: 3rem;
+        color: #6c757d;
+        text-align: center;
+        padding: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .nav-toggle {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            flex-direction: column;
+            align-items: center;
+            display: none;
+        }
+
+        .nav.is-active {
+            display: flex;
+        }
+
+        .nav ul {
+            flex-direction: column;
+            width: 100%;
+            text-align: center;
+        }
+
+        .nav ul li {
+            width: 100%;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+<br>
+<div class="container">
+    <div class="form-container">
+        <h2 class="form-title">KYC Information</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% if kyc %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="form-title">KYC Details</h5>
+                <p><strong>Document Type:</strong> {{ kyc.document_type | capitalize }}</p>
+                <p><strong>Document Number:</strong> {{ kyc.document_number }}</p>
+                <p><strong>Status:</strong>
+                    <span class="badge
+                        {% if kyc.status == 'pending' %}badge-warning
+                        {% elif kyc.status == 'verified' %}badge-success
+                        {% else %}badge-danger{% endif %}">
+                        {{ kyc.status | capitalize }}
+                    </span>
+                </p>
+                <p><strong>Submitted At:</strong> {{ kyc.submitted_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                {% if kyc.document_image_url %}
+                <p><strong>Document:</strong></p>
+                <div class="image-preview">
+                    <img src="{{ kyc.document_image_url }}" alt="KYC Document">
+                </div>
+                {% else %}
+                <div class="image-preview">
+                    <i class="document-icon fas fa-file-alt"></i>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No KYC information submitted yet.
+            <a href="{{ url_for('farmer.submit_kyc') }}" class="btn-secondary">Submit KYC</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

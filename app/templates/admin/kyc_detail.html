@@ -1,0 +1,277 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<style>
+    /* Container Styles */
+    .container {
+        width: 90%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 0;
+    }
+
+    /* Card Styles */
+    .card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: #f8f9fa;
+        padding: 20px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c5530;
+    }
+
+    .card-body {
+        padding: 30px;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .card-body p {
+        margin-bottom: 20px;
+        font-size: 0.95rem;
+        color: #555;
+    }
+
+    .card-body p strong {
+        color: #2c5530;
+        font-weight: 600;
+    }
+
+    /* Status Badge */
+    .badge {
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .badge-warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .badge-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Image Preview */
+    .image-preview {
+        margin-top: 15px;
+        max-width: 300px;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+
+    .image-preview img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+
+    .document-icon {
+        font-size: 3rem;
+        color: #6c757d;
+        text-align: center;
+        padding: 20px;
+        display: block;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+        background: #3a6d3f;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(231, 76, 60, 0.2);
+        background: #a93226;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.2);
+    }
+
+    .btn-primary:disabled,
+    .btn-danger:disabled {
+        background: #d6d8db;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Page Header */
+    .page-title {
+        color: #2c5530;
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 30px;
+    }
+
+    /* Flash Messages */
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+
+    .alert-error,
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container {
+            padding: 20px 0;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-primary,
+        .btn-danger,
+        .btn-secondary {
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+
+        .image-preview {
+            max-width: 100%;
+        }
+    }
+</style>
+
+<div class="container">
+    <h2 class="page-title">KYC Detail</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <div class="card-header">
+            <strong>User:</strong> {{ kyc.user.full_name }} ({{ kyc.user.email }})
+        </div>
+        <div class="card-body">
+            <p><strong>Status:</strong>
+                <span class="badge
+                    {% if kyc.status == 'pending' %}badge-warning
+                    {% elif kyc.status == 'verified' %}badge-success
+                    {% else %}badge-danger{% endif %}">
+                    {{ kyc.status|capitalize }}
+                </span>
+            </p>
+            <p><strong>Submitted At:</strong> {{ kyc.submitted_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p><strong>Document Type:</strong> {{ kyc.document_type|capitalize }}</p>
+            <p><strong>Document Number:</strong> {{ kyc.document_number }}</p>
+            <p><strong>Document Image:</strong><br>
+                {% if kyc.document_image_url %}
+            <div class="image-preview">
+                <img src="{{ kyc.document_image_url }}" alt="Document Image">
+            </div>
+            {% else %}
+            <div class="image-preview">
+                <i class="document-icon fas fa-file-alt"></i>
+                <em>No image uploaded.</em>
+            </div>
+            {% endif %}
+            </p>
+            <div class="action-buttons">
+                <form method="POST" action="{{ url_for('admin.kyc_approve', kyc_id=kyc.id) }}" style="display:inline;">
+                    <button type="submit" class="btn-primary" {% if kyc.status=='verified' %}disabled{% endif
+                        %}>Approve</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.kyc_reject', kyc_id=kyc.id) }}" style="display:inline;">
+                    <button type="submit" class="btn-danger" {% if kyc.status=='rejected' %}disabled{% endif
+                        %}>Reject</button>
+                </form>
+                <a href="{{ url_for('admin.kyc_list') }}" class="btn-secondary">Back to List</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

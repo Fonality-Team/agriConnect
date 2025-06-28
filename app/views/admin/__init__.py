@@ -8,6 +8,7 @@ from app.services.upload_service import LocalFileUpload
 from app.extensions import db
 from sqlalchemy import func
 from datetime import datetime, timedelta
+from app.models.kyc import KYC
 
 admin_bp = Blueprint('admin', __name__, template_folder='../templates/admin')
 
@@ -250,3 +251,37 @@ def analytics():
                          recent_users=recent_users,
                          recent_price_changes=recent_price_changes,
                          category_stats=category_stats)
+
+@admin_bp.route('/kyc')
+@login_required
+@admin_required
+def kyc_list():
+    kycs = KYC.query.order_by(KYC.submitted_at.desc()).all()
+    return render_template('admin/kyc_list.html', kycs=kycs)
+
+@admin_bp.route('/kyc/<int:kyc_id>')
+@login_required
+@admin_required
+def kyc_detail(kyc_id):
+    kyc = KYC.query.get_or_404(kyc_id)
+    return render_template('admin/kyc_detail.html', kyc=kyc)
+
+@admin_bp.route('/kyc/<int:kyc_id>/approve', methods=['POST'])
+@login_required
+@admin_required
+def kyc_approve(kyc_id):
+    kyc = KYC.query.get_or_404(kyc_id)
+    kyc.status = 'verified'
+    db.session.commit()
+    flash('KYC approved.', 'success')
+    return redirect(url_for('admin.kyc_detail', kyc_id=kyc_id))
+
+@admin_bp.route('/kyc/<int:kyc_id>/reject', methods=['POST'])
+@login_required
+@admin_required
+def kyc_reject(kyc_id):
+    kyc = KYC.query.get_or_404(kyc_id)
+    kyc.status = 'rejected'
+    db.session.commit()
+    flash('KYC rejected.', 'warning')
+    return redirect(url_for('admin.kyc_detail', kyc_id=kyc_id))

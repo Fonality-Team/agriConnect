@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCNx_NsdsE0xS7CEkyp5skrOYa1TPY82yY&libraries=places"
+        async defer></script>
     <style>
         * {
             margin: 0;
@@ -484,14 +486,31 @@
                 height: calc(100vh - 200px);
             }
         }
+
+        .logo {
+            text-decoration: none;
+            color: white;
+
+        }
     </style>
 </head>
 
 <body>
+
+    <!-- messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
     <!-- Header -->
     <div class="header">
         <div class="header-left">
-            <div class="logo">AgriChat</div>
+            <div class="logo"><a href="/" class="logo">AgriConnect</a></div>
             <div class="search-container">
                 <input type="text" class="search-input" placeholder="Search messages...">
                 <button class="search-btn">Search</button>
@@ -587,6 +606,25 @@
                     No other users available
                 </div>
                 {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Google Maps Place Picker Modal -->
+    <div id="mapModal" class="modal">
+        <div class="modal-content" style="width: 600px; max-width: 95%;">
+            <div class="modal-header">
+                <h3>Select a Location</h3>
+                <span class="close" onclick="closeMapModal()">×</span>
+            </div>
+            <div id="map" style="height: 400px; width: 100%;"></div>
+            <div id="place-search" style="margin-top: 10px;">
+                <input type="text" id="place-input" placeholder="Search for a place..."
+                    style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #dee2e6;">
+            </div>
+            <div style="margin-top: 10px; text-align: right;">
+                <button class="location-btn-small" onclick="confirmLocation()">Confirm Location</button>
             </div>
         </div>
     </div>
@@ -870,6 +908,307 @@
                 window.history.replaceState({}, '', cleanUrl);
             }
         });
+
+
+        // Google Maps variables
+        let map;
+        let autocomplete;
+        let selectedPlace = null;
+
+        // Initialize Google Maps and Places Autocomplete
+        function initMap() {
+            // Initialize map centered at a default location (e.g., center of the world)
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 0, lng: 0 },
+                zoom: 2,
+                mapTypeControl: false,
+                streetViewControl: false
+            });
+
+            // Initialize Places Autocomplete
+            const placeInput = document.getElementById('place-input');
+            autocomplete = new google.maps.places.Autocomplete(placeInput);
+            autocomplete.bindTo('bounds', map);
+
+            // When a place is selected
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (!place.geometry || !place.geometry.location) {
+                    console.error('No details available for the selected place.');
+                    return;
+                }
+
+                selectedPlace = place;
+                map.setCenter(place.geometry.location);
+                map.setZoom(15);
+
+                // Add a marker at the selected location
+                new google.maps.Marker({
+                    position: place.geometry.location,
+                    map: map,
+                    title: place.name
+                });
+            });
+        }
+
+        // Open the map modal
+        function shareLocation() {
+            const mapModal = document.getElementById('mapModal');
+            mapModal.style.display = 'block';
+
+            // Initialize map after modal is visible to ensure proper rendering
+            if (!map) {
+                initMap();
+            }
+        }
+
+        // Close the map modal
+        function closeMapModal() {
+            document.getElementById('mapModal').style.display = 'none';
+            selectedPlace = null;
+            document.getElementById('place-input').value = '';
+        }
+
+        // Confirm and send the selected location
+        function confirmLocation() {
+            if (!selectedPlace) {
+                alert('Please select a location first.');
+                return;
+            }
+
+            const locationData = {
+                name: selectedPlace.name || selectedPlace.formatted_address,
+                lat: selectedPlace.geometry.location.lat(),
+                lng: selectedPlace.geometry.location.lng(),
+                formatted_address: selectedPlace.formatted_address
+            };
+
+            // Send location as a message
+            sendLocationMessage(locationData);
+
+            // Close modal and reset
+            closeMapModal();
+        }
+
+        // Send location message
+        function sendLocationMessage(locationData) {
+            if (!currentReceiverId) {
+                alert('Please select a conversation first.');
+                return;
+            }
+
+            const messageContent = JSON.stringify({
+                type: 'location',
+                name: locationData.name,
+                lat: locationData.lat,
+                lng: locationData.lng,
+                formatted_address: locationData.formatted_address
+            });
+
+            fetch('/messages/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    receiver_id: currentReceiverId,
+                    content: messageContent,
+                    conversation_id: currentConversationId
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.conversation_id) {
+                            currentConversationId = data.conversation_id;
+                        }
+                        displayLocationMessage(locationData, 'You', new Date().toISOString(), true);
+                    } else {
+                        console.error('Error sending location:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending location:', error);
+                });
+        }
+
+        // Display location message in chat
+        function displayLocationMessage(locationData, senderName, timestamp, isOwn) {
+            const messagesContainer = document.getElementById('messages-container');
+            const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isOwn ? 'user-message' : 'bot-message';
+            const date = new Date(timestamp);
+            const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageDiv.innerHTML = `
+        <div class="message-bubble location-message">
+            <div class="message-sender">${senderName}</div>
+            <div class="location-header">
+                <span>📍</span>
+                <span>Location Shared</span>
+            </div>
+            <div class="location-name">${locationData.name}</div>
+            <div class="location-coordinates">Lat: ${locationData.lat.toFixed(4)}, Lng: ${locationData.lng.toFixed(4)}</div>
+            <div class="location-actions">
+                <a href="https://www.google.com/maps?q=${locationData.lat},${locationData.lng}" target="_blank" class="location-btn-small">View on Map</a>
+            </div>
+            <div class="message-time">${formattedTime}</div>
+        </div>
+    `;
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Modify the existing new_message socket handler to support location messages
+        socket.on('new_message', function (data) {
+            console.log('New message received:', data);
+            const senderId = parseInt(data.sender_id);
+            const currentReceiverIdInt = parseInt(currentReceiverId);
+            const senderUsername = data.sender_username || 'Unknown User';
+
+            // Try to parse the message content as JSON for location data
+            let content = data.content;
+            let isLocation = false;
+            let locationData = null;
+
+            try {
+                const parsedContent = JSON.parse(data.content);
+                if (parsedContent.type === 'location') {
+                    isLocation = true;
+                    locationData = parsedContent;
+                }
+            } catch (e) {
+                // Not a JSON or location message, treat as regular text
+            }
+
+            // If the conversation with the sender is active, display the message
+            if (senderId === currentReceiverIdInt && currentReceiverIdInt !== null) {
+                if (isLocation) {
+                    displayLocationMessage(locationData, senderUsername, data.created_at, false);
+                } else {
+                    displayMessage(data.content, senderUsername, data.created_at, false);
+                }
+            }
+
+            const conversationsContainer = document.getElementById('conversations');
+            let conversationItem = document.querySelector(`.conversation-item[data-user-id="${senderId}"]`);
+
+            // If no conversation item exists, create one
+            if (!conversationItem) {
+                const noConvMsg = conversationsContainer.querySelector('div[style*="text-align: center"]');
+                if (noConvMsg) {
+                    noConvMsg.remove();
+                }
+
+                conversationItem = document.createElement('div');
+                conversationItem.classList.add('conversation-item');
+                conversationItem.setAttribute('data-user-id', senderId);
+                conversationItem.innerHTML = `
+            <div class="user-avatar-small"></div>
+            <div class="conversation-info">
+                <div class="conversation-name">${senderUsername}</div>
+                <div class="conversation-preview">${isLocation ? 'Shared a location' : data.content.substring(0, 50)}${!isLocation && data.content.length > 50 ? '...' : ''}</div>
+            </div>
+        `;
+                conversationItem.addEventListener('click', () => loadConversation(senderId, senderUsername));
+                conversationsContainer.appendChild(conversationItem);
+            } else {
+                // Update existing conversation preview
+                const previewDiv = conversationItem.querySelector('.conversation-preview');
+                if (previewDiv) {
+                    previewDiv.textContent = isLocation ? 'Shared a location' : data.content.substring(0, 50) + (data.content.length > 50 ? '...' : '');
+                }
+                // Move to top
+                conversationsContainer.insertBefore(conversationItem, conversationsContainer.firstChild);
+            }
+        });
+
+        // Update loadConversation to handle location messages
+        function loadConversation(userId, username, productId = null) {
+            currentReceiverId = parseInt(userId);
+            currentConversationId = null;
+
+            // Update active conversation
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
+            if (conversationItem) {
+                conversationItem.classList.add('active');
+            }
+
+            // Clear messages
+            const messagesContainer = document.getElementById('messages-container');
+            messagesContainer.innerHTML = '';
+
+            // Build URL
+            let url = `/messages/conversation/${userId}`;
+            if (productId) {
+                url += `?product_id=${productId}`;
+            }
+
+            // Load messages via AJAX
+            fetch(url, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Server returned non-JSON response');
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.messages) {
+                        currentConversationId = data.conversation_id;
+                        data.messages.forEach(message => {
+                            const isOwn = message.sender_id == currentUserId;
+                            try {
+                                const parsedContent = JSON.parse(message.content);
+                                if (parsedContent.type === 'location') {
+                                    displayLocationMessage(parsedContent, message.sender_username || username, message.created_at, isOwn);
+                                } else {
+                                    displayMessage(message.content, message.sender_username || username, message.created_at, isOwn);
+                                }
+                            } catch (e) {
+                                displayMessage(message.content, message.sender_username || username, message.created_at, isOwn);
+                            }
+                        });
+
+                        // Update marketplace section
+                        const marketplaceSection = document.getElementById('marketplace-section');
+                        const productInfo = document.getElementById('product-info');
+                        if (data.product_id && data.product_name && data.product_price) {
+                            marketplaceSection.style.display = 'block';
+                            productInfo.textContent = `FCFA ${data.product_price.toLocaleString()} · ${data.product_name}`;
+                        } else {
+                            marketplaceSection.style.display = 'none';
+                        }
+                    } else {
+                        messagesContainer.innerHTML = '<div class="welcome-message">No messages yet. Start the conversation!</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading conversation:', error);
+                    messagesContainer.innerHTML = `
+                <div class="welcome-message" style="color: #dc3545;">
+                    Failed to load conversation. ${error.message === 'Server returned non-JSON response' ?
+                            'The server returned an unexpected response. Please try again or contact support.' :
+                            'Please check your connection or try again later.'}
+                </div>`;
+                });
+        }
     </script>
 </body>
 

@@ -1,0 +1,153 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<style>
+    /* Table Responsive Container */
+    .table-responsive {
+        overflow-x: auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+
+    /* Table Styles */
+    .products-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .products-table th,
+    .products-table td {
+        padding: 15px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+
+    .products-table th {
+        background-color: #f8f9fa;
+        color: #333;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+
+    .products-table td {
+        color: #555;
+    }
+
+    /* Status Badge */
+    .badge {
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .badge-warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .badge-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Action Buttons */
+    .action-buttons .btn-primary {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .action-buttons .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+        background: #3a6d3f;
+    }
+
+    /* Page Header */
+    .page-title {
+        color: #2c5530;
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 30px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+
+        .products-table th,
+        .products-table td {
+            padding: 10px;
+            font-size: 0.85rem;
+        }
+
+        .action-buttons .btn-primary {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+
+<div class="container">
+    <h2 class="page-title">KYC Requests</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="table-responsive">
+        <table class="products-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Submitted At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for kyc in kycs %}
+                <tr>
+                    <td>{{ kyc.id }}</td>
+                    <td>{{ kyc.user.full_name }} ({{ kyc.user.email }})</td>
+                    <td>
+                        <span class="badge
+                            {% if kyc.status == 'pending' %}badge-warning
+                            {% elif kyc.status == 'verified' %}badge-success
+                            {% else %}badge-danger{% endif %}">
+                            {{ kyc.status|capitalize }}
+                        </span>
+                    </td>
+                    <td>{{ kyc.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="action-buttons">
+                        <a href="{{ url_for('admin.kyc_detail', kyc_id=kyc.id) }}" class="btn-primary">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

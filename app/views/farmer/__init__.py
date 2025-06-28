@@ -12,8 +12,31 @@ from wtforms import StringField, TextAreaField, DecimalField, SelectField, Submi
 from wtforms.validators import DataRequired, NumberRange, Length, Optional
 import os
 from werkzeug.utils import secure_filename
+from app.models.kyc import KYC
+from datetime import datetime
 
 farmer_bp = Blueprint('farmer', __name__, template_folder='../templates/farmer')
+
+
+# KYC Form
+class KYCForm(FlaskForm):
+    document_type = SelectField('Document Type',
+                              choices=[
+                                  ('national_id', 'National ID'),
+                                  ('passport', 'Passport'),
+                                  ('drivers_license', "Driver's License"),
+                                  ('voters_card', "Voter's Card")
+                              ],
+                              validators=[DataRequired()])
+    document_number = StringField('Document Number',
+                                validators=[DataRequired(), Length(min=4, max=50)])
+    document_image = FileField('Document Image',
+                             validators=[
+                                 DataRequired(),
+                                 FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')
+                             ])
+    submit = SubmitField('Submit KYC')
+
 
 class ProductForm(FlaskForm):
     name = StringField('Product Name', validators=[DataRequired(), Length(min=2, max=100)])
@@ -40,8 +63,27 @@ class ProductForm(FlaskForm):
 class DeleteForm(FlaskForm):
     submit = SubmitField('Delete')
 
+
+
+def farmer_required(func):
+    from functools import wraps
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # kyc has been approve
+
+
+        if not current_user.is_authenticated or current_user.role not in ['farmer', 'admin']:
+            flash('Famers access required.', 'danger')
+            return redirect(url_for('main.index'))
+        if current_user.role == 'farmer' and not KYC.query.filter_by(user_id=current_user.id, status='verified').first():
+            flash('KYC verification required before accessing farmer features.', 'warning')
+            return redirect(url_for('farmer.submit_kyc'))
+        return func(*args, **kwargs)
+    return wrapper
+
 @farmer_bp.route('/products/create', methods=['GET', 'POST'])
 @login_required
+@farmer_required
 def create_product():
     form = ProductForm()
     categories = Category.query.all()
@@ -99,6 +141,7 @@ def create_product():
 
 @farmer_bp.route('/products')
 @login_required
+@farmer_required
 def list_products():
     # Add search and filter for farmer's own products
     search_query = request.args.get('q', '').strip()
@@ -134,6 +177,7 @@ def list_products():
 @farmer_bp.route('/dashboard')
 @farmer_bp.route('/',)
 @login_required
+@farmer_required
 def dashboard():
     # Get comprehensive farmer statistics
     product_count = Product.query.filter_by(farmer_id=current_user.id).count()
@@ -166,6 +210,7 @@ def dashboard():
 
 @farmer_bp.route('/products/delete/<int:product_id>', methods=['POST'])
 @login_required
+@farmer_required
 def delete_product(product_id):
     form = DeleteForm()
     if form.validate_on_submit():
@@ -179,6 +224,7 @@ def delete_product(product_id):
 
 @farmer_bp.route('/products/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
+@farmer_required
 def edit_product(product_id):
     product = Product.query.filter_by(id=product_id, farmer_id=current_user.id).first_or_404()
     form = ProductForm(obj=product)
@@ -220,6 +266,7 @@ def edit_product(product_id):
 
 @farmer_bp.route('/products/delete_image/<int:image_id>', methods=['POST'])
 @login_required
+@farmer_required
 def delete_product_image(image_id):
     form = DeleteForm()
     if form.validate_on_submit():
@@ -236,3 +283,67 @@ def delete_product_image(image_id):
     else:
         flash('Invalid CSRF token.', 'danger')
         return redirect(request.referrer or url_for('farmer.list_products'))
+
+
+@farmer_bp.route('/kyc/submit', methods=['GET', 'POST'])
+@login_required
+def submit_kyc():
+    form = KYCForm()
+
+    # Check if user already has KYC record
+    existing_kyc = KYC.query.filter_by(user_id=current_user.id).first()
+    if existing_kyc and existing_kyc.status in ['pending', 'verified']:
+        flash('You have already submitted KYC information.', 'info')
+        return redirect(url_for('farmer.view_kyc'))
+
+    if form.validate_on_submit():
+        try:
+            # Handle document upload
+            upload_service = LocalFileUpload()
+            document_url = None
+            if form.document_image.data:
+                filename = secure_filename(form.document_image.data.filename)
+                if filename:
+                    import uuid
+                    file_ext = filename.rsplit('.', 1)[1].lower()
+                    unique_filename = f"kyc_{uuid.uuid4().hex}.{file_ext}"
+                    document_url = upload_service.upload_file(form.document_image.data, f'kyc/{current_user.id}/{unique_filename}')
+
+            # Create new KYC record
+            kyc = KYC(
+                user_id=current_user.id,
+                document_type=form.document_type.data,
+                document_number=form.document_number.data,
+                document_image_url=document_url,
+                status='pending',
+                submitted_at=datetime.now()
+            )
+
+            db.session.add(kyc)
+            db.session.commit()
+            flash('KYC information submitted successfully!', 'success')
+            return redirect(url_for('farmer.view_kyc'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error submitting KYC information: {str(e)}', 'error')
+            current_app.logger.error(f"Error submitting KYC: {str(e)}")
+
+    return render_template('farmer/submit_kyc.html', form=form)
+
+@farmer_bp.route('/kyc')
+@login_required
+def view_kyc():
+    kyc = KYC.query.filter_by(user_id=current_user.id).first()
+    if kyc is None:
+        flash('No KYC information found. Please submit your KYC first.', 'warning')
+        return redirect(url_for('farmer.submit_kyc'))
+    if kyc.status == 'pending':
+        flash('Your KYC is still pending verification.', 'info')
+    elif kyc.status == 'rejected':
+        flash('Your KYC was rejected. Please resubmit with correct information.', 'warning')
+        return redirect(url_for('farmer.submit_kyc'))
+    elif kyc.status == 'verified':
+        flash('Your KYC has been verified successfully!', 'success')
+        return redirect(url_for('farmer.dashboard'))
+    return render_template('farmer/view_kyc.html', kyc=kyc)
