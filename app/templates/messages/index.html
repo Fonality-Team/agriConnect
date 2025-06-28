@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/UserDashboard.css') }}" />
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCNx_NsdsE0xS7CEkyp5skrOYa1TPY82yY&libraries=places"
         async defer></script>
     <style>
@@ -21,8 +22,9 @@
         }
 
         /* Header */
+
         .header {
-            background: rgb(40, 167, 69);
+            background: #28a745;
             padding: 15px 30px;
             display: flex;
             justify-content: space-between;
@@ -492,6 +494,11 @@
             color: white;
 
         }
+
+        .brand-name a {
+            text-decoration: none;
+            color: white;
+        }
     </style>
 </head>
 
@@ -509,8 +516,12 @@
     {% endwith %}
     <!-- Header -->
     <div class="header">
+
         <div class="header-left">
-            <div class="logo"><a href="/" class="logo">AgriConnect</a></div>
+            <div class="logo-container">
+                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
+                <h1 class="brand-name"><a href="/">AgriConnect</a></h1>
+            </div>
             <div class="search-container">
                 <input type="text" class="search-input" placeholder="Search messages...">
                 <button class="search-btn">Search</button>
