@@ -5,6 +5,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="{{url_for('static', filename='css/Contact.css')}}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/UserDashboard.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
     <link rel="icon" href="{{url_for('static', filename='img/agrilogo.PNG')}}" type="image/x-icon" />
     <title>AgriConnect</title>
 </head>
@@ -16,6 +18,44 @@
 </style>
 
 <body>
+
+    <!-- Header with Navigation and Search -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-container">
+                <img class="logo" src="{{ url_for('static', filename='img/agrilogo.PNG') }}" alt="AgriConnect Logo" />
+                <h1 class="brand-name">AgriConnect</h1>
+            </div>
+            <form method="get" action="/" class="search-form">
+                <input type="text" name="q" placeholder="Search products..." value="{{ request.args.get('q', '') }}"
+                    aria-label="Search products" />
+                <button type="submit" class="search-button">Search</button>
+            </form>
+            <button class="nav-toggle" aria-label="toggle navigation">
+                <span class="hamburger"></span>
+            </button>
+            <nav class="nav">
+                <ul>
+                    <li><a href="/#home" class="nav-link">Home</a></li>
+                    <li><a href="/#categories" class="nav-link">Categories</a></li>
+                    <li><a href="/#products" class="nav-link">Products</a></li>
+                    {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('message.index') }}" class="nav-link">Messages</a></li>
+                    {% if current_user.role == 'admin' %}
+                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin</a></li>
+                    {% elif current_user.role == 'farmer' %}
+                    <li><a href="{{ url_for('farmer.dashboard') }}" class="nav-link">Dashboard</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
+                    {% else %}
+                    <li><a href="{{ url_for('auth.login') }}" class="nav-link">Login</a></li>
+                    <li><a href="{{ url_for('auth.register') }}" class="nav-link">Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
     <div class="first-div-one">
         <div class="first-div">
             <div class="about-title">
@@ -45,7 +85,7 @@
         <p class="techstack">Tech Stack</p>
         <div class="teck-div">
             <div class="stack-card">
-                <img class="stack-img" src="flask.jpg" alt="Flask" />
+                <img class="stack-img" src="{{url_for('static', filename='img/flask.jpeg')}}" alt="Flask" />
                 <p class="stack-name">Flask</p>
                 <p class="stack-description">
                     Flask serves as the web framework for the application, enabling the
@@ -56,7 +96,7 @@
                 </p>
             </div>
             <div class="stack-card">
-                <img class="stack-img" src="Html.jpg" alt="HTML" />
+                <img class="stack-img" src="{{url_for('static', filename='img/Html.jpeg')}}" alt="HTML" />
                 <p class="stack-name">HTML</p>
                 <p class="stack-description">
                     HTML is utilized to structure the web application’s content,
@@ -67,7 +107,7 @@
                 </p>
             </div>
             <div class="stack-card">
-                <img class="stack-img" src="jinja2.jpeg" alt="Jinja" />
+                <img class="stack-img" src="{{url_for('static', filename='img/jinja2.jpeg')}}" alt="Jinja" />
                 <p class="stack-name">Jinja2</p>
                 <p class="stack-description">
                     Jinja is used as the templating engine for rendering dynamic HTML
@@ -77,7 +117,7 @@
                 </p>
             </div>
             <div class="stack-card">
-                <img class="stack-img" src="Railway.webp" alt="Railway" />
+                <img class="stack-img" src="{{url_for('static', filename='img/Railway.jpeg')}}" alt="Railway" />
                 <p class="stack-name">Railway</p>
                 <p class="stack-description">
                     Docker is used to containerize the application, ensuring consistency
@@ -87,7 +127,7 @@
                 </p>
             </div>
             <div class="stack-card">
-                <img class="stack-img" src="Docker.jpg" alt="Docker" />
+                <img class="stack-img" src="{{url_for('static', filename='img/Docker.jpeg')}}" alt="Docker" />
                 <p class="stack-name">Docker</p>
                 <p class="stack-description">
                     Docker is used to containerize the application, ensuring consistency
@@ -97,7 +137,7 @@
                 </p>
             </div>
             <div class="stack-card">
-                <img class="stack-img" src="Css.jpg" alt="CSS" />
+                <img class="stack-img" src="{{url_for('static', filename='img/Css.jpeg')}}" alt="CSS" />
                 <p class="stack-name">CSS</p>
                 <p class="stack-description">
                     CSS is utilized to style the web application, enhancing its visual
@@ -107,7 +147,7 @@
                 </p>
             </div>
             <div class="stack-card">
-                <img class="stack-img" src="javascript.jpg" alt="JavaScript" />
+                <img class="stack-img" src="{{url_for('static', filename='img/javascript.jpeg')}}" alt="JavaScript" />
                 <p class="stack-name">JavaScript</p>
                 <p class="stack-description">
                     JavaScript is incorporated to add interactivity and enhance user
@@ -123,24 +163,24 @@
         <p class="third-title">Scrum members</p>
         <div class="Members">
             <div class="member-card">
-                <img class="member-img" src="Alice.jpeg" alt="Alice" />
+                <img class="member-img" src="{{url_for('static', filename='img/Alice.jpeg')}}" alt="Alice" />
                 <p class="member-name">Nzekui Nzoudjio Alice C.</p>
                 <p class="member-role">Scrum master</p>
             </div>
             <div class="member-card">
-                <img class="member-img" src="precious.jpeg" alt="Precious" />
+                <img class="member-img" src="{{url_for('static', filename='img/precious.jpeg')}}" alt="Precious" />
                 <p class="member-name">Taku Precious Wopong</p>
                 <p class="member-role">Product Owner</p>
             </div>
             <div class="member-card">
-                <img class="member-img" src="Raouda.jpeg" alt="Raouda" />
+                <img class="member-img" src="{{url_for('static', filename='img/Raouda.jpeg')}}" alt="Raouda" />
                 <p class="member-name">Raouda Mahamat Youssouf</p>
                 <p class="member-role">Developer</p>
             </div>
             <div class="member-card">
-                <img class="member-img" src="yxngac.jpg" alt="Yxngac" />
+                <img class="member-img" src="{{url_for('static', filename='img/yxngac.jpeg')}}" alt="Yxngac" />
                 <p class="member-name">Chewi Clinton Shu</p>
-                <p class="member-role">Developer</p>
+                <p class="member-role">Developer, CTO</p>
             </div>
         </div>
     </div>

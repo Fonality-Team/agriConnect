@@ -14,16 +14,11 @@ from app.models.product import Product, Category, ProductImage
 def safe_create_categories():
     """Create categories only if they don't exist"""
     categories_data = [
-        {'name': 'Fruits', 'description': 'Fresh seasonal fruits', 'image': 'https://picsum.photos/id/100/800/600'},
-        {'name': 'Vegetables', 'description': 'Fresh vegetables and leafy greens', 'image': 'https://picsum.photos/id/101/800/600'},
-        {'name': 'Grains', 'description': 'Rice, wheat, corn and other grains', 'image': 'https://picsum.photos/id/102/800/600'},
-        {'name': 'Legumes', 'description': 'Beans, lentils and pulses', 'image': 'https://picsum.photos/id/103/800/600'},
-        {'name': 'Tubers', 'description': 'Potatoes, yams, cassava and root vegetables', 'image': 'https://picsum.photos/id/104/800/600'},
-        {'name': 'Spices', 'description': 'Local spices and herbs', 'image': 'https://picsum.photos/id/105/800/600'},
-        {'name': 'Nuts', 'description': 'Groundnuts, cashews and other nuts', 'image': 'https://picsum.photos/id/106/800/600'},
-        {'name': 'Dairy', 'description': 'Milk, cheese and dairy products', 'image': 'https://picsum.photos/id/107/800/600'},
-        {'name': 'Poultry', 'description': 'Chicken, eggs and poultry products', 'image': 'https://picsum.photos/id/108/800/600'},
-        {'name': 'Fish', 'description': 'Fresh and dried fish', 'image': 'https://picsum.photos/id/109/800/600'}
+        {'name': 'Fruits', 'description': 'Fresh seasonal fruits', 'image': '/static/img/Fruits.jpg'},
+        {'name': 'Vegetables', 'description': 'Fresh vegetables and leafy greens', 'image': '/static/img/Fruits.jpg'},
+        {'name': 'Grains', 'description': 'Rice, wheat, corn and other grains', 'image': '/static/img/Vegetables.jpg'},
+        {'name': 'Tubers', 'description': 'Potatoes, yams, cassava and root vegetables', 'image': '/static/img/Tuber.jpeg'},
+        {'name': 'Nuts', 'description': 'Groundnuts, cashews and other nuts', 'image': '/static/img/Nuts.jpg'},
     ]
 
     created_count = 0
@@ -288,34 +283,12 @@ def main():
         try:
             print("Starting safe database seeding...")
 
-            # Create users first
-            users = safe_create_users()
-            farmers = [u for u in users if u.role == 'farmer']
-
-            if not farmers:
-                print("No farmers found! Cannot create products.")
-                return
-
             # Create categories
             categories = safe_create_categories()
 
-            # Create products
-            products = safe_create_products(categories, farmers, max_products=50)
-
             print("\nSeeding completed successfully!")
-            print(f"Total users: {User.query.count()}")
-            print(f"Total categories: {Category.query.count()}")
-            print(f"Total products: {Product.query.count()}")
-            print(f"Total farmers: {len(farmers)}")
 
-            print("\nLogin credentials:")
-            print("Admin: admin@agriconnect.com / admin123")
-            print("Farmer: john@farm.com / password123")
-            print("Sample farmer contacts:")
-            for farmer in farmers[:3]:
-                phone_info = f"Phone: {farmer.phone}" if farmer.phone else "No phone"
-                whatsapp_info = f"WhatsApp: {farmer.whatsapp}" if farmer.whatsapp else "No WhatsApp"
-                print(f"  {farmer.username}: {phone_info}, {whatsapp_info}")
+            print(f"Total categories: {Category.query.count()}")
 
         except Exception as e:
             print(f"Error during seeding: {e}")

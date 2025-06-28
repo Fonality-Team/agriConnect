@@ -12,6 +12,11 @@
         body {
             background-image: url("{{url_for('static', filename='img/Background-img.jpg')}}");
         }
+
+        button a {
+            text-decoration: none;
+            color: white;
+        }
     </style>
 </head>
 
@@ -22,7 +27,7 @@
             <p class="agi">AgriConnect</p>
         </div>
         <div class="right">
-            <button>About</button>
+            <button><a href="/about">About</a></button>
         </div>
     </div>
 
