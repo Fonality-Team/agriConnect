@@ -591,6 +591,7 @@
         </div>
     </div>
 
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
         let socket = io();
@@ -605,27 +606,20 @@
 
         socket.on('new_message', function (data) {
             console.log('New message received:', data);
-            console.log('Current receiver ID:', currentReceiverId, typeof currentReceiverId);
-            console.log('Sender ID:', data.sender_id, typeof data.sender_id);
-
             const senderId = parseInt(data.sender_id);
             const currentReceiverIdInt = parseInt(currentReceiverId);
-            const senderUsername = data.sender_username;
+            const senderUsername = data.sender_username || 'Unknown User';
 
-            // If the conversation with the sender is currently active, display the message
+            // If the conversation with the sender is active, display the message
             if (senderId === currentReceiverIdInt && currentReceiverIdInt !== null) {
-                console.log('Displaying message in active chat for sender:', senderUsername);
                 displayMessage(data.content, senderUsername, data.created_at, false);
-            } else {
-                console.log('Message not for current active chat. SenderId:', senderId, 'CurrentReceiverId:', currentReceiverIdInt);
             }
 
             const conversationsContainer = document.getElementById('conversations');
             let conversationItem = document.querySelector(`.conversation-item[data-user-id="${senderId}"]`);
 
-            // If a conversation item for the sender doesn't exist, create it
+            // If no conversation item exists, create one
             if (!conversationItem) {
-                // Remove "No conversations" message if it exists
                 const noConvMsg = conversationsContainer.querySelector('div[style*="text-align: center"]');
                 if (noConvMsg) {
                     noConvMsg.remove();
@@ -635,42 +629,23 @@
                 conversationItem.classList.add('conversation-item');
                 conversationItem.setAttribute('data-user-id', senderId);
                 conversationItem.innerHTML = `
-                    <div class="user-avatar-small"></div>
-                    <div class="conversation-info">
-                        <div class="conversation-name">${senderUsername}</div>
-                        <div class="conversation-preview">New conversation</div>
-                    </div>
-                `;
-                // Add the click listener when creating
+                <div class="user-avatar-small"></div>
+                <div class="conversation-info">
+                    <div class="conversation-name">${senderUsername}</div>
+                    <div class="conversation-preview">${data.content.substring(0, 50)}${data.content.length > 50 ? '...' : ''}</div>
+                </div>
+            `;
                 conversationItem.addEventListener('click', () => loadConversation(senderId, senderUsername));
                 conversationsContainer.appendChild(conversationItem);
-            }
-
-            // Update the conversation preview
-            const nameDiv = conversationItem.querySelector('.conversation-name');
-            const previewDiv = conversationItem.querySelector('.conversation-preview');
-
-            if (nameDiv && previewDiv) {
-                // Update existing elements to preserve event listeners
-                nameDiv.textContent = senderUsername;
-                previewDiv.textContent = data.content.substring(0, 50) + (data.content.length > 50 ? '...' : '');
             } else {
-                // Recreate the HTML if elements don't exist
-                conversationItem.innerHTML = `
-                    <div class="user-avatar-small"></div>
-                    <div class="conversation-info">
-                        <div class="conversation-name">${senderUsername}</div>
-                        <div class="conversation-preview">
-                            ${data.content.substring(0, 50)}${data.content.length > 50 ? '...' : ''}
-                        </div>
-                    </div>
-                `;
-                // Re-add the click listener since we recreated the HTML
-                conversationItem.addEventListener('click', () => loadConversation(senderId, senderUsername));
+                // Update existing conversation preview
+                const previewDiv = conversationItem.querySelector('.conversation-preview');
+                if (previewDiv) {
+                    previewDiv.textContent = data.content.substring(0, 50) + (data.content.length > 50 ? '...' : '');
+                }
+                // Move to top
+                conversationsContainer.insertBefore(conversationItem, conversationsContainer.firstChild);
             }
-
-            // Move the updated/new conversation to the top of the list
-            conversationsContainer.insertBefore(conversationItem, conversationsContainer.firstChild);
         });
 
         // Close modal when clicking outside
@@ -694,7 +669,6 @@
             const message = messageInput.value.trim();
 
             if (message && currentReceiverId) {
-                // Send via AJAX instead of socket for better conversation tracking
                 fetch('/messages/send', {
                     method: 'POST',
                     headers: {
@@ -709,11 +683,9 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Update conversation ID if returned
                             if (data.conversation_id) {
                                 currentConversationId = data.conversation_id;
                             }
-                            // Display message immediately
                             displayMessage(message, 'You', new Date().toISOString(), true);
                             messageInput.value = '';
                         } else {
@@ -729,8 +701,6 @@
         // Display message in chat
         function displayMessage(content, senderName, timestamp, isOwn) {
             const messagesContainer = document.getElementById('messages-container');
-
-            // Remove welcome message if present
             const welcomeMessage = messagesContainer.querySelector('.welcome-message');
             if (welcomeMessage) {
                 welcomeMessage.remove();
@@ -738,18 +708,16 @@
 
             const messageDiv = document.createElement('div');
             messageDiv.className = isOwn ? 'user-message' : 'bot-message';
-
-            // Format timestamp
             const date = new Date(timestamp);
             const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             messageDiv.innerHTML = `
-                <div class="message-bubble">
-                    <div class="message-sender">${senderName}</div>
-                    ${content}
-                    <div class="message-time">${formattedTime}</div>
-                </div>
-            `;
+            <div class="message-bubble">
+                <div class="message-sender">${senderName}</div>
+                ${content}
+                <div class="message-time">${formattedTime}</div>
+            </div>
+        `;
 
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -757,50 +725,76 @@
 
         // Load conversation
         function loadConversation(userId, username, productId = null) {
-            currentReceiverId = userId;
-            currentConversationId = null; // Reset conversation ID
+            currentReceiverId = parseInt(userId);
+            currentConversationId = null;
 
             // Update active conversation
             document.querySelectorAll('.conversation-item').forEach(item => {
                 item.classList.remove('active');
             });
-            document.querySelector(`[data-user-id="${userId}"]`).classList.add('active');
+            const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
+            if (conversationItem) {
+                conversationItem.classList.add('active');
+            }
 
             // Clear messages
             const messagesContainer = document.getElementById('messages-container');
             messagesContainer.innerHTML = '';
 
-            // Build URL with product ID if provided
+            // Build URL
             let url = `/messages/conversation/${userId}`;
             if (productId) {
                 url += `?product_id=${productId}`;
             }
 
             // Load messages via AJAX
-            fetch(url)
-                .then(response => response.json())
+            fetch(url, {
+                headers: {
+                    'Accept': 'application/json' // Explicitly request JSON
+                }
+            })
+                .then(response => {
+                    // Check if response is JSON
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Server returned non-JSON response');
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    if (data.messages) {
-                        // Set conversation ID for future messages
+                    if (data.success && data.messages) {
                         currentConversationId = data.conversation_id;
-
                         data.messages.forEach(message => {
                             const isOwn = message.sender_id == currentUserId;
-                            displayMessage(message.content, message.sender_username, message.created_at, isOwn);
+                            displayMessage(message.content, message.sender_username || username, message.created_at, isOwn);
                         });
-                    }
 
-                    // Update marketplace section if product info is available
-                    if (data.product_id && data.product_name) {
+                        // Update marketplace section
                         const marketplaceSection = document.getElementById('marketplace-section');
                         const productInfo = document.getElementById('product-info');
-                        marketplaceSection.style.display = 'block';
-                        productInfo.textContent = `${data.product_name}`;
+                        if (data.product_id && data.product_name && data.product_price) {
+                            marketplaceSection.style.display = 'block';
+                            productInfo.textContent = `FCFA ${data.product_price.toLocaleString()} · ${data.product_name}`;
+                        } else {
+                            marketplaceSection.style.display = 'none';
+                        }
+                    } else {
+                        messagesContainer.innerHTML = '<div class="welcome-message">No messages yet. Start the conversation!</div>';
                     }
                 })
-                .catch(error => console.error('Error loading conversation:', error));
+                .catch(error => {
+                    console.error('Error loading conversation:', error);
+                    messagesContainer.innerHTML = `
+                <div class="welcome-message" style="color: #dc3545;">
+                    Failed to load conversation. ${error.message === 'Server returned non-JSON response' ?
+                            'The server returned an unexpected response. Please try again or contact support.' :
+                            'Please check your connection or try again later.'}
+                </div>`;
+                });
         }
-
         // Open new message modal
         function openNewMessageModal() {
             document.getElementById('newMessageModal').style.display = 'block';
@@ -817,73 +811,64 @@
             loadConversation(userId, username);
         }
 
-        // Initialize conversation click handlers
+        // Initialize conversation click handlers and load from URL
         document.addEventListener('DOMContentLoaded', function () {
-            // Check if we're coming from a direct link (e.g., from marketplace)
-            const pathParts = window.location.pathname.split('/');
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // Handle URL pattern: /messages/conversation/{user_id}
-            if (pathParts.length >= 4 && pathParts[1] === 'messages' && pathParts[2] === 'conversation') {
-                const userId = pathParts[3];
-                const productId = urlParams.get('product_id');
-
-                if (userId) {
-                    // Find the username from conversations or users list
-                    const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
-                    let username = 'Unknown User';
-
-                    if (conversationItem) {
-                        username = conversationItem.querySelector('.conversation-name').textContent;
-                    } else {
-                        // Try to find in the users list (for new conversations)
-                        const userItem = document.querySelector(`[data-user-id="${userId}"]`);
-                        if (userItem) {
-                            username = userItem.textContent.trim();
-                        }
-                    }
-
-                    // Load the conversation automatically
-                    loadConversation(userId, username, productId);
-                }
-            }
-            // Handle URL pattern: /messages/?conversation_id=...&user_id=...&product_id=...
-            else if (urlParams.get('conversation_id') && urlParams.get('user_id')) {
-                const userId = urlParams.get('user_id');
-                const productId = urlParams.get('product_id');
-                const conversationId = urlParams.get('conversation_id');
-
-                if (userId) {
-                    // Find the username from conversations or users list
-                    const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
-                    let username = 'Unknown User';
-
-                    if (conversationItem) {
-                        username = conversationItem.querySelector('.conversation-name').textContent;
-                    } else {
-                        // Try to find in the users list (for new conversations)
-                        const userItem = document.querySelector(`[data-user-id="${userId}"]`);
-                        if (userItem) {
-                            username = userItem.textContent.trim();
-                        }
-                    }
-
-                    // Load the conversation automatically
-                    loadConversation(userId, username, productId);
-
-                    // Clean up the URL after loading the conversation
-                    const cleanUrl = window.location.pathname;
-                    window.history.replaceState({}, '', cleanUrl);
-                }
-            }
-
+            // Remove existing event listeners to prevent duplicates
             document.querySelectorAll('.conversation-item').forEach(item => {
-                item.addEventListener('click', function () {
-                    const userId = this.dataset.userId;
-                    const username = this.querySelector('.conversation-name').textContent;
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+                newItem.addEventListener('click', function () {
+                    const userId = newItem.dataset.userId;
+                    const username = newItem.querySelector('.conversation-name').textContent;
                     loadConversation(userId, username);
                 });
             });
+
+            // Handle direct link or URL parameters
+            const pathParts = window.location.pathname.split('/');
+            const urlParams = new URLSearchParams(window.location.search);
+            let userId = null;
+            let productId = urlParams.get('product_id');
+            let username = 'Unknown User';
+
+            // Check for /messages/conversation/{user_id}
+            if (pathParts.length >= 4 && pathParts[1] === 'messages' && pathParts[2] === 'conversation') {
+                userId = pathParts[3];
+            }
+            // Check for /messages/?conversation_id=...&user_id=...
+            else if (urlParams.get('user_id')) {
+                userId = urlParams.get('user_id');
+            }
+
+            if (userId && !isNaN(parseInt(userId))) {
+                userId = parseInt(userId);
+                // Find username
+                const conversationItem = document.querySelector(`[data-user-id="${userId}"]`);
+                if (conversationItem) {
+                    username = conversationItem.querySelector('.conversation-name').textContent;
+                } else {
+                    // Fetch username from server if not found in DOM
+                    fetch(`/user/${userId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && data.username) {
+                                username = data.username;
+                            }
+                            loadConversation(userId, username, productId);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching username:', error);
+                            loadConversation(userId, username, productId);
+                        });
+                }
+
+                // Load conversation
+                loadConversation(userId, username, productId);
+
+                // Clean up URL
+                const cleanUrl = '/messages';
+                window.history.replaceState({}, '', cleanUrl);
+            }
         });
     </script>
 </body>
